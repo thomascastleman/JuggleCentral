@@ -15,17 +15,18 @@ module.exports = {
 
 		// cache user info from our system into their session
 		passport.serializeUser(function(user, done) {
-			// EXAMPLE: look up user in system by email
-			con.query('SELECT * FROM users WHERE email = ?;', [user._json.email], function(err, rows) {
-				if (!err && rows !== undefined && rows.length > 0) {
-					user.local = rows[0];
-					done(null, user);
+			done(null, user);
+			// // EXAMPLE: look up user in system by email
+			// con.query('SELECT * FROM users WHERE email = ?;', [user._json.email], function(err, rows) {
+			// 	if (!err && rows !== undefined && rows.length > 0) {
+			// 		user.local = rows[0];
+			// 		done(null, user);
 
-				// if no user exists
-				} else {
-					done("The system failed to find a user account associated with the given email.", null);
-				}
-			});
+			// 	// if no user exists
+			// 	} else {
+			// 		done("The system failed to find a user account associated with the given email.", null);
+			// 	}
+			// });
 		});
 
 		passport.deserializeUser(function(user, done) {

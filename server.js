@@ -24,6 +24,8 @@ app.use(session({
 	saveUninitialized: true
 }));
 
+var PORT = 8080;
+
 // import local modules for routes / all other functionality
 var auth = require('./auth.js').init(app, passport);
 
@@ -33,6 +35,6 @@ app.get('/', function(req, res) {
 });
 
 // start server
-var server = app.listen(8080, function() {
-	console.log('Server listening on port %d', server.address().port);
+var server = app.listen(PORT, function() {
+	console.log('JuggleCentral server listening on port %d', server.address().port);
 });
