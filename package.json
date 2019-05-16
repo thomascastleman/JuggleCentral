@@ -1,0 +1,27 @@
+{
+  "name": "JuggleCentral",
+  "version": "1.0.0",
+  "description": "A platform for jugglers to track their progress across various events and access local records.",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thomascastleman/JuggleCentral.git"
+  },
+  "author": "Thomas Castleman",
+  "license": "MIT",
+  "homepage": "https://github.com/thomascastleman/JuggleCentral/blob/master/README.md",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "cookie-parser": "^1.4.4",
+    "cookie-session": "^1.3.3",
+    "express": "^4.16.4",
+    "mustache-express": "^1.2.8",
+    "mysql": "^2.17.1",
+    "passport": "^0.4.0",
+    "passport-google-oauth20": "^2.0.0",
+    "querystring": "^0.2.0"
+  }
+}
