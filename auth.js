@@ -109,7 +109,7 @@ module.exports = {
 		// if authenticated and has session data
 		if (req.isAuthenticated() && req.user.local) {
 			// if administrator, allow
-			if (req.user.local.is_admin) {
+			if (req.user.local.isAdmin) {
 				return next();
 			} else {
 				res.redirect('/');
@@ -130,7 +130,7 @@ module.exports = {
 
 	// middleware (for POSTs) to check if requester is admin
 	isAdminPOST: function(req, res, next) {
-		if (req.isAuthenticated() && req.user.local && req.user.local.is_admin == 1) {
+		if (req.isAuthenticated() && req.user.local && req.user.local.isAdmin == 1) {
 			return next();
 		} else {
 			res.redirect('/');
