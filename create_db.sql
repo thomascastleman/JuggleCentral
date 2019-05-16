@@ -3,3 +3,11 @@ DROP DATABASE IF EXISTS juggling;
 CREATE DATABASE juggling;
 
 USE juggling;
+
+CREATE TABLE users(
+	uid INT NOT NULL AUTO_INCREMENT,
+	name VARCHAR(64),
+	email VARCHAR(64),
+	bio TEXT,
+	PRIMARY KEY (uid)
+);
