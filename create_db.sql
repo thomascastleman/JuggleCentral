@@ -32,7 +32,7 @@ CREATE TABLE records (
 	duration TIME,
 	timeRecorded DATETIME,
 	video VARCHAR(512),
-	FOREIGN KEY (userUID) REFERENCES users(uid),
-	FOREIGN KEY (patternUID) REFERENCES patterns(uid),
+	FOREIGN KEY (userUID) REFERENCES users(uid) ON DELETE CASCADE,
+	FOREIGN KEY (patternUID) REFERENCES patterns(uid) ON DELETE CASCADE,
 	PRIMARY KEY (uid)
 );
