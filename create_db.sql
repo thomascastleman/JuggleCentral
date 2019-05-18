@@ -11,6 +11,7 @@ CREATE TABLE users (
 	email VARCHAR(64),
 	bio TEXT,
 	isAdmin TINYINT(1),
+	score FLOAT,
 	rank INT,
 	PRIMARY KEY (uid)
 );
@@ -22,7 +23,9 @@ CREATE TABLE patterns (
 	description TEXT,
 	numObjects INT,
 	GIF VARCHAR(512),
-	difficulty FLOAT,
+	difficulty FLOAT,				-- relative difficulty of this pattern
+	avgHighScoreCatch FLOAT,		-- average high score for catches in this pattern
+	avgHighScoreTime FLOAT,			-- average high score for time in this pattern
 	PRIMARY KEY (uid)
 );
 
@@ -31,6 +34,7 @@ CREATE TABLE records (
 	uid INT NOT NULL AUTO_INCREMENT,
 	userUID INT,
 	patternUID INT,
+	score FLOAT,
 	rank INT,
 	catches INT,
 	duration TIME,
