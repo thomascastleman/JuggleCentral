@@ -11,6 +11,7 @@ CREATE TABLE users (
 	email VARCHAR(64),
 	bio TEXT,
 	isAdmin TINYINT(1),
+	rank INT,
 	PRIMARY KEY (uid)
 );
 
@@ -19,8 +20,8 @@ CREATE TABLE patterns (
 	uid INT NOT NULL AUTO_INCREMENT,
 	name VARCHAR(32),
 	description TEXT,
-	GIF VARCHAR(512),
 	numObjects INT,
+	GIF VARCHAR(512),
 	difficulty FLOAT,
 	PRIMARY KEY (uid)
 );
@@ -37,14 +38,5 @@ CREATE TABLE records (
 	video VARCHAR(512),
 	FOREIGN KEY (userUID) REFERENCES users(uid) ON DELETE CASCADE,
 	FOREIGN KEY (patternUID) REFERENCES patterns(uid) ON DELETE CASCADE,
-	PRIMARY KEY (uid)
-);
-
--- all global rankings of users
-CREATE TABLE globalRankings (
-	uid INT NOT NULL AUTO_INCREMENT,
-	userUID INT,
-	rank INT,
-	FOREIGN KEY (userUID) REFERENCES users(uid),
 	PRIMARY KEY (uid)
 );
