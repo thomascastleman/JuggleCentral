@@ -11,6 +11,7 @@ CREATE TABLE users (
 	email VARCHAR(64),
 	bio TEXT,
 	isAdmin TINYINT(1),
+	score FLOAT,
 	rank INT,
 	PRIMARY KEY (uid)
 );
