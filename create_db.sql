@@ -11,8 +11,8 @@ CREATE TABLE users (
 	email VARCHAR(64),
 	bio TEXT,
 	isAdmin TINYINT(1),
-	score FLOAT,
-	rank INT,
+	score FLOAT,					-- sum of this user's high score record scores
+	rank INT,						-- user's position in the leaderboard sorted / pooled by user score
 	PRIMARY KEY (uid)
 );
 
@@ -21,7 +21,7 @@ CREATE TABLE patterns (
 	uid INT NOT NULL AUTO_INCREMENT,
 	name VARCHAR(32),
 	description TEXT,
-	numObjects INT,
+	numObjects INT,					-- number of objects used in this pattern
 	GIF VARCHAR(512),
 	difficulty FLOAT,				-- relative difficulty of this pattern
 	avgHighScoreCatch FLOAT,		-- average high score for catches in this pattern
@@ -34,11 +34,11 @@ CREATE TABLE records (
 	uid INT NOT NULL AUTO_INCREMENT,
 	userUID INT,
 	patternUID INT,
-	score FLOAT,
-	rank INT,
-	catches INT,
-	duration TIME,
-	timeRecorded DATETIME,
+	score FLOAT,					-- ratio of this user's high score to the pattern high score, multiplied by pattern difficulty
+	rank INT,						-- position of this record in this pattern leaderboard sorted / pooled by duration / catches
+	catches INT,					-- number of catches in this attempt (catch-based)
+	duration TIME,					-- duration of this attempt (time-based)
+	timeRecorded DATETIME,			-- when the record was added
 	video VARCHAR(512),
 	FOREIGN KEY (userUID) REFERENCES users(uid) ON DELETE CASCADE,
 	FOREIGN KEY (patternUID) REFERENCES patterns(uid) ON DELETE CASCADE,
