@@ -28,6 +28,7 @@ var PORT = 8080;
 
 // import local modules for routes / all other functionality
 var auth = require('./auth.js').init(app, passport);
+var sys = require('./settings.js');
 
 // send user's session info (for testing auth)
 app.get('/', function(req, res) {

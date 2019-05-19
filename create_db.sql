@@ -7,6 +7,7 @@ USE juggling;
 -- all system users
 CREATE TABLE users (
 	uid INT NOT NULL AUTO_INCREMENT,
+	timeCreated DATETIME,
 	name VARCHAR(64),
 	email VARCHAR(64),
 	bio TEXT,
@@ -19,13 +20,14 @@ CREATE TABLE users (
 -- juggling patterns
 CREATE TABLE patterns (
 	uid INT NOT NULL AUTO_INCREMENT,
+	timeCreated DATETIME,
 	name VARCHAR(32),
 	description TEXT,
 	numObjects INT,					-- number of objects used in this pattern
 	GIF VARCHAR(512),
 	difficulty FLOAT,				-- relative difficulty of this pattern
 	avgHighScoreCatch FLOAT,		-- average high score for catches in this pattern
-	avgHighScoreTime FLOAT,			-- average high score for time in this pattern
+	avgHighScoreTime FLOAT,			-- average high score for time in this pattern (ms)
 	PRIMARY KEY (uid)
 );
 
@@ -34,7 +36,7 @@ CREATE TABLE records (
 	uid INT NOT NULL AUTO_INCREMENT,
 	userUID INT,
 	patternUID INT,
-	score FLOAT,					-- ratio of this user's high score to the pattern high score, multiplied by pattern difficulty
+	score FLOAT,					-- ratio of this user's high score to the pattern high score
 	rank INT,						-- position of this record in this pattern leaderboard sorted / pooled by duration / catches
 	catches INT,					-- number of catches in this attempt (catch-based)
 	duration TIME,					-- duration of this attempt (time-based)
