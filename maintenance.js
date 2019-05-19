@@ -38,4 +38,35 @@ module.exports = {
 		Remove an existing record by UID
 		*/
 
+	addUser: function(name, email, bio, isAdmin, cb){
+		//check whether the required fields aren't null
+		if(name && email && isAdmin != undefined){
+			//insert the information into the database.
+			con.query('INSERT INTO users (timeCreated, name, email, bio, isAdmin) VALUES (NOW(), ?, ?, ?, ?);', [name, email, bio, isAdmin], function(err) {
+				//callback on the sql error.
+				cb(err);
+			}
+		}
+		//if one of the fields is null, callback an error
+		else{
+			cb("One or more of the required fields were not filled out correctly.");
+		}
+
+	},
+
+	editUser: function(uid, bio, cb){
+		//check whether the uid parameter isn't null
+		if(uid != undefined){ 
+			//change the user's bio
+			con.query('UPDATE users SET bio = ? WHERE uid = ?;', [bio, uid], function(err){
+				//callback on the sql error
+				cb(err);
+			});
+		}
+		//if the uid is null then callback the error.
+		else{
+			cb("There was no uid to edit students.");
+		}
+	}
+
 }
