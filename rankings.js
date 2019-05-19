@@ -3,6 +3,8 @@
 	Functionality dealing with user rankings.
 */
 
+var con = require('./database.js').connection;
+
 module.exports = {
 
 	/*

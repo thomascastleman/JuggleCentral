@@ -1,4 +1,13 @@
 
+/*
+	All system routes
+*/
+
+var getters = require('./getters.js');
+var maintenance = require('./maintenance.js');
+var rankings = require('./rankings.js');
+var search = require('./search.js');
+var sys = require('./settings.js');
 
 module.exports = {
 

@@ -3,6 +3,8 @@
 	Functionality for searching for users and patterns.
 */
 
+var con = require('./database.js').connection;
+
 module.exports = {
 	
 /*

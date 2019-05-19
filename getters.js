@@ -3,6 +3,8 @@
 	Functionality for accessing table data.
 */
 
+var con = require('./database.js').connection;
+
 module.exports = {
 
 	/*

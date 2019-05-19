@@ -3,6 +3,8 @@
 	Functionality for performing basic table maintenance.
 */
 
+var con = require('./database.js').connection;
+
 module.exports = {
 	/*
 	Admin:addUser(name, email, isAdmin, bio, cb)
