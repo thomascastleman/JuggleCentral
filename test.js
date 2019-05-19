@@ -100,7 +100,7 @@ function generateRecords(cb) {
 						for (var p = 0; p < patterns.length; p++) {
 							// if user participating in this pattern
 							if (Math.random() < PARTICIPATION) {
-								var attempts = Math.floor(Math.random() * MAX_NUM_ATTEMPTS);
+								var attempts = Math.floor(Math.random() * MAX_NUM_ATTEMPTS) + 5;
 								var usingCatches = Math.random() < 0.5;
 								var catchScore, timeScore;
 

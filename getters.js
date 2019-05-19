@@ -7,163 +7,212 @@ var con = require('./database.js').connection;
 
 module.exports = {
 
-	/*
-	getUser(uid, cb)
-	Get all user info associated with ID.
-
-	getPattern(uid, cb)
-		Get all pattern info associated with ID.
-
-	getRecordsByUser(userUID, cb)
-		Get all the records of a given user to be parsed with future smart scripts. Will JOIN to get pattern name. ORDER BY patternUID, catches, duration. Splits into [{patternUID: 1, catches:[], duration:[]}]
-
-	getRecordsByPattern(patternUID, cb)
-		Get all records for a specific pattern by UID. JOINs on user name. ORDER BY catches, duration; (this should both split the records into two “sections” and sort them properly in each category. Splits into catch-based and time-based records, returns object with both arrays.
-
-	getGlobalLeaderboard(cb)
-		Gets all users, ordered by rank.
-
-	getRecentPersonalBests(limit, cb)
-		Get recently set records which are personal bests, within a date cutoff.
-
-	getRecentNewUsers(limit, cb)
-		Get recently created users.
-
-	getRecentNewPatterns(limit, cb)
-		Get recently created patterns.
-	*/
-
-	//Get all user info associated with ID.
+	// Get all user info associated with ID.
 	getUser: function(uid, cb){
-		//check for insufficient fields
-		if(uid != undefined){
-			//retrieve the information from the db
+		// check for insufficient fields
+		if (uid){
+			// retrieve the information from the db
 			con.query('SELECT * FROM users WHERE uid = ?;', [uid], function(err, rows){
 				//if there isn't an error, callback the info.
 				if(!err && rows !== undefined && rows.length > 0){
 					cb(rows[0]);
-				} 
+				}
 				else {
 					//callback an error
 					cb("Unable to retrieve user information.");
 				}
 			});
 		}
-		//error on insufficient fields
+		// error on insufficient fields
 		else{
 			cb("uid is undefined.");
 		}
 	},
 
-	//Get all pattern info associated with ID.
+	// Get all pattern info associated with ID.
 	getPattern: function(uid, cb){
-		//check for insufficient fields
-		if(uid != undefined){
-			//retrieve the information from the db
+		// check for insufficient fields
+		if (uid){
+			// retrieve the information from the db
 			con.query('SELECT * FROM patterns WHERE uid = ?;', [uid], function(err, rows){
-				//if there isn't an error, callback the info.
+				// if there isn't an error, callback the info.
 				if(!err && rows !== undefined && rows.length > 0){
 					cb(rows[0]);
 				} 
 				else {
-					//callback error
+					// callback error
 					cb("Unable to retrieve pattern information.");
 				}
 			});
 		}
-		//error on insufficient fields
+		// error on insufficient fields
 		else{
 			cb("uid is undefined.");
 		}
 	},
 
-	//Get all the records of a given user to be parsed with future smart scripts. Will JOIN to get pattern name. ORDER BY patternUID, catches, duration. Splits into [{patternUID: 1, catches:[], duration:[]}]
+	/*	Get all the records of a given user.
+		Will JOIN to get pattern name. ORDER BY patternUID, catches, duration. 
+		Splits into array of pattern objects with uid, name, and all catch and time records for this user */
 	getRecordsByUser: function(userUID, cb){
 		//check for insufficient fields
-		if(userUID != undefined){
-			//retrieve the information from the db
-			con.query('SELECT * FROM records r JOIN patterns p ON r.patternUID = p.uid WHERE userUID = ? ORDER BY r.patternUID, r.duration, r.catches DESC;' [userUID], function(err, rows){
-				//if there isn't an error, callback the info.
+		if (userUID != undefined){
+			// retrieve the information from the db
+			con.query('SELECT r.*, p.name AS patternName FROM records r JOIN patterns p ON r.patternUID = p.uid WHERE r.userUID = ? ORDER BY r.patternUID, r.duration, r.catches DESC;', [userUID], function(err, rows){
+				// if there isn't an error, callback the info.
 				if (!err && rows !== undefined){
-					//if there are records
-					if (rows.length > 0){
-						var curPatternUID = rows[0].patternUID;
-						var splitRecords = [{patternUID: curPatternUID, catches: [], duration:[]}];
-						var splitRecordsIndex = 0;
- 
-						for (var i = 0; i < rows.length; i++){
-							//if the duration of the record is defined
-							if (rows[i].duration){
-								//append this duration to the list of durations associated with this patternUID
-								splitRecords[splitRecordsIndex].duration.append(rows[i].duration);
-							}
-							//if the catches field of the record is defined
-							else {
-								//append this number of catches to the list of catches associated with this patternUID
-								splitRecords[splitRecordsIndex].catches.append(rows[i].catches);
-							}
+					var patterns = [];
+					var idToPattern = {};
 
-							//if the list has moved on to a new patternUID
-							if (curPatternUID != rows[i+1].patternUID){
-								curPatternUID = rows[i+1].patternUID
-								splitRecords.append({patternUID: curPatternUID, catches:[], duration:[]});
-								splitRecordsIndex += 1;
-							}
+					// for each record
+					for (var i = 0; i < rows.length; i++) {
+						var r = rows[i];
+
+						// if no existing object for this record's pattern
+						if (!idToPattern[r.patternUID]) {
+							// create new object to manage data for this pattern
+							idToPattern[r.patternUID] = {
+								uid: r.patternUID,
+								name: r.patternName,
+								catchRecords: [],
+								timeRecords: []
+							};
 						}
 
-						cb(null, splitRecords);
+						// insert into the appropriate array of records within pattern object
+						if (r.catches != null) {
+							idToPattern[r.patternUID].catchRecords.push(r);
+						} else {
+							idToPattern[r.patternUID].timeRecords.push(r);
+						}
 					}
-					//if there aren't any records
-					else{
-						cb(null, rows);
+
+					// add all pattern objects into one array
+					for (var id in idToPattern) {
+						if (idToPattern.hasOwnProperty(id)) {
+							patterns.push(idToPattern[id]);
+						}
 					}
-				}
-				else{
-					//callback error
-					cb("Unable to retrieve user's record information.");
+
+					// callback on patterns array
+					cb(null, patterns);
+				} else {
+					// callback error
+					cb(err || "Unable to retrieve user's record information.");
 				}
 			});
 		}
-		//error on insufficient fields
+		// error on insufficient fields
 		else{
-			cb("userUID is undefined.");
+			cb("Unable to get records as no user UID was given.");
 		}
 	},
 
-	//Get all records for a specific pattern by UID. JOINs on user name. ORDER BY catches, duration; (this should both split the records into two “sections” and sort them properly in each category. Splits into catch-based and time-based records, returns object with both arrays.
+	/*	Get all records for a specific pattern by UID. JOINs on user name. ORDER BY catches, duration;
+		This should both split the records into two “sections” and sort them properly in each category. 
+		Splits into catch-based and time-based records, returns object with both arrays. */	
 	getRecordsByPattern: function(patternUID, cb){
 		//check for insufficient fields
 		if(patternUID != undefined){
-			//retrieve the information from the db
-			con.query('SELECT * FROM records r JOIN users u ON r.userUID = u.uid WHERE r.patternUID = ? ORDER BY r.catches, r.duration;', [patternUID], function(err, rows){
-				//if there aren't any errors
+			// get all records associated with this pattern, JOINing on users table to get associated username & user rank
+			con.query('SELECT r.*, u.name AS userName, u.userRank FROM records r JOIN users u ON r.userUID = u.uid WHERE r.patternUID = ? ORDER BY r.catches, r.duration DESC;', [patternUID], function(err, rows){
+				// if there aren't any errors
 				if(!err && rows !== undefined){
-					//if there is some data
-					if(rows.length > 0){
-						var splitRecords = [[], []]
-						for(var i = 0; i < rows.length; i++){
-							//if this record uses catches
-							if(rows[i].catches != undefined){
-								//add it to the catches part of the split records
-								splitRecords[0].append(rows[i].catches);
-							}
-							else{
-								//add the duration to the duration part of the split records
-								splitRecords[1].append(rows[i].duration);
-							}
+					// object to store records for this pattern
+					var records = {
+						catchRecords: [],
+						timeRecords: []
+					};
+
+					// for each record associated with this pattern
+					for (var i = 0; i < rows.length; i++){
+						// if this record uses catches
+						if(rows[i].catches != undefined){
+							// add it to the catches part of the split records
+							records.catchRecords.push(rows[i]);
 						}
-
-						cb(null, splitRecords);
-
+						else{
+							//add the duration to the duration part of the split records
+							records.timeRecords.push(rows[i]);
+						}
 					}
-					else{
-						cb(null, rows);
-					}
+
+					// callback on object with both catch- and time-based records
+					cb(null, records);
+				} else {
+					cb(err || "Unable to retrieve records for this pattern.");
 				}
 			});
 		}
 		else{
-			cb("patternUID is undefined")
+			cb("Unable to get records by pattern, as no pattern was specified.")
+		}
+	},
+
+	// Gets all users, ordered by rank.
+	getGlobalLeaderboard: function(cb) {
+		// select from users and order by rank
+		con.query('SELECT * FROM users ORDER BY userRank ASC;', function(err, rows) {
+			if (!err && rows !== undefined) {
+				// callback on user profiles
+				cb(rows);
+			} else {
+				// callback on error
+				cb(err || "Unable to retrieve user data for global leaderboard.");
+			}
+		});
+	},
+
+	// Get recently set records which are personal bests
+	getRecentPersonalBests: function(limit, cb) {
+		if (limit && limit > 0) {
+			// select only personal bests from records, joining to get user and pattern name, limiting size of response
+			con.query('SELECT r.*, u.name AS userName, p.name AS patternName FROM records r JOIN users u ON r.userUID = u.uid JOIN patterns p ON r.patternUID = p.uid WHERE r.isPersonalBest = 1 LIMIT ?;', [limit], function(err, rows) {
+				if (!err && rows !== undefined) {
+					// callback on records
+					cb(err, rows);
+				} else {
+					// callback on error finding records
+					cb(err || "Unable to retrieve any records.");
+				}
+			});
+		} else {
+			// callback on error for lack of limit
+			cb("Unable to get recent personal bests as no limit on the number of records was given.");
+		}
+	},
+
+	// Get recently created users.
+	getRecentNewUsers: function(limit, cb) {
+		// ensure limit exists and is positive
+		if (limit && limit > 0) {
+			// select the most recently created users, ordering by recentness
+			con.query('SELECT * FROM users ORDER BY timeCreated DESC LIMIT ?;', [limit], function(err, rows) {
+				if (!err && rows !== undefined) {
+					cb(err, rows);
+				} else {
+					cb(err || "Unable to retrieve recently created users.");
+				}
+			});
+		} else {
+			cb("Invalid limit to number of users to retrieve.");
+		}
+	},
+
+	// Get recently created patterns.
+	getRecentNewPatterns: function(limit, cb) {
+		// ensure limit exists and is positive
+		if (limit && limit > 0) {
+			// select the most recently created patterns, ordering by recentness
+			con.query('SELECT * FROM patterns ORDER BY timeCreated DESC LIMIT ?;', [limit], function(err, rows) {
+				if (!err && rows !== undefined) {
+					cb(err, rows);
+				} else {
+					cb(err || "Unable to retrieve recently created patterns.");
+				}
+			});
+		} else {
+			cb("Invalid limit to number of patterns to retrieve.");
 		}
 	}
 	
