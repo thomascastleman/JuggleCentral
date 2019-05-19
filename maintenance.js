@@ -26,7 +26,8 @@ module.exports = {
 		Edits all fields of pattern.
 
 	Admin:removePattern(uid, cb)
-	Deletes the pattern (make hard to do)	
+	Deletes the pattern (make hard to do)
+
 
 	User:addRecord(userUID, patternUID, catches, duration, timeRecorded, video, cb)
 		Adds a record linking a given user and pattern.
@@ -37,5 +38,51 @@ module.exports = {
 	User:removeRecord(uid, cb)
 		Remove an existing record by UID
 		*/
+
+
+	// adds a new juggling pattern to the patterns table
+	addPattern: function(name, description, numObjects, gif, cb) {
+		// ensure name & number of objects exist
+		if (name && numObjects && numObjects > 0) {
+			// run insert query
+			con.query('INSERT INTO patterns (timeCreated, name, description, numObjects, GIF) VALUES (NOW(), ?, ?, ?, ?);', [name, description, numObjects, gif], function(err) {
+				cb(err);
+			});
+		} else {
+			// error on insufficient fields
+			cb("All required pattern fields must be filled out.");
+		}
+	},
+
+	// edits all fields of an existing pattern
+	editPattern: function(uid, name, description, numObjects, gif, cb) {
+		// ensure name & number of objects exist
+		if (name && numObjects && numObjects > 0) {
+			// run update query on specific pattern
+			con.query('UPDATE patterns SET name = ?, description = ?, numObjects = ?, GIF = ? WHERE uid = ?;', [name, description, numObjects, gif, uid], function(err) {
+				cb(err);
+			});
+		} else {
+			// error on insufficient fields
+			cb("All required pattern fields must be filled out.");
+		}
+	},
+
+	// deletes an existing pattern and all associated records
+	removePattern: function(uid, cb) {
+		// remove the pattern from patterns table
+		con.query('DELETE FROM patterns WHERE uid = ?;', [uid], function(err) {
+			if (!err) {
+
+
+				// now recalc user score, and update global rankings. (this should be its own function)
+
+
+			} else {
+				cb(err);
+			}
+		});
+	}
+
 
 }
