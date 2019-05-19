@@ -13,7 +13,7 @@ CREATE TABLE users (
 	bio TEXT,
 	isAdmin TINYINT(1),
 	score FLOAT,					-- sum of this user's high score record scores
-	rank INT,						-- user's position in the leaderboard sorted / pooled by user score
+	userRank INT,						-- user's position in the leaderboard sorted / pooled by user score
 	PRIMARY KEY (uid)
 );
 
@@ -38,7 +38,7 @@ CREATE TABLE records (
 	patternUID INT,
 	isPersonalBest TINYINT(1),		-- is this record the user's personal best for this pattern?
 	score FLOAT,					-- ratio of this user's high score to the pattern high score
-	rank INT,						-- position of this record in this pattern leaderboard sorted / pooled by duration / catches
+	recordRank INT,						-- position of this record in this pattern leaderboard sorted / pooled by duration / catches
 	catches INT,					-- number of catches in this attempt (catch-based)
 	duration TIME,					-- duration of this attempt (time-based)
 	timeRecorded DATETIME,			-- when the record was added
