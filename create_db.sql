@@ -36,6 +36,7 @@ CREATE TABLE records (
 	uid INT NOT NULL AUTO_INCREMENT,
 	userUID INT,
 	patternUID INT,
+	isPersonalBest TINYINT(1),		-- is this record the user's personal best for this pattern?
 	score FLOAT,					-- ratio of this user's high score to the pattern high score
 	rank INT,						-- position of this record in this pattern leaderboard sorted / pooled by duration / catches
 	catches INT,					-- number of catches in this attempt (catch-based)
