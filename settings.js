@@ -2,6 +2,9 @@
 
 module.exports = {
 
+	// port on which server listens
+	PORT: 8080,
+
 	// name of organization's juggling club
 	jugglingClubName: "STAB Juggling Squad",
 
