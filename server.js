@@ -26,12 +26,8 @@ app.use(session({
 
 // import local modules for routes / all other functionality
 var auth = require('./auth.js').init(app, passport);
+var routes = require('./routes.js').init(app);
 var sys = require('./settings.js');
-
-// send user's session info (for testing auth)
-app.get('/', function(req, res) {
-	res.send(req.user || "There is no session for this user.");
-});
 
 // start server
 var server = app.listen(sys.PORT, function() {
