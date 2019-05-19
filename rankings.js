@@ -46,6 +46,13 @@ module.exports = {
 						Recalc user scores for users competing in this pattern
 					Recalculate global rank for everyone.
 
+
+	On Edit Pattern:
+
+
+	On Delete Pattern:
+		Recalc user scores, and update global rank.
+
 	*/
 
 }
