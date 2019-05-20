@@ -81,7 +81,8 @@ module.exports = {
 
 	// calculate global user scores for a subset of users, by UID
 	calcUserScores: function(userUIDs, cb) {
-
+		// Definitely combine this func with calcAllUserScores, have the userUIDs param be optional, if null, then calc all scores, if exists, calc only subset
+		// (will have to modify initial query that gets records to only select for a subset of user UIDs)
 	},
 
 	// calculate the record scores for all PB records within a given pattern
