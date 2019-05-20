@@ -24,6 +24,10 @@ var MAX_NUM_ATTEMPTS = 50;	// max number of attempts at a given pattern
 if (NUM_USERS + NUM_ADMINS > random.names.length) throw new Error("Too many users requested.");
 if (NUM_PATTERNS > random.patterns.length) throw new Error("Too many patterns requested.");
 
+// get a random date string
+function randomTime() {
+	return moment().subtract(Math.floor(Math.random() * 12), 'months').subtract(Math.floor(Math.random() * 30), 'days').subtract(Math.floor(Math.random() * 30), 'hours').subtract(Math.floor(Math.random() * 30), 'minutes').format('YYYY-MM-DD HH:mm:ss');
+}
 // generate a list of random users
 function generateUsers() {
 	var possible = [];
@@ -40,7 +44,7 @@ function generateUsers() {
 
 		// add new random user [name, email, bio, isAdmin]
 		users.push([
-			moment().format('YYYY-MM-DD HH:mm:ss'),
+			randomTime(),
 			random.names[possible[rand]],
 			random.emails[possible[rand]],
 			Math.random() < P_BIO ? casual.sentence : null,
@@ -70,7 +74,7 @@ function generatePatterns() {
 
 		// [timeCreated, name, description, numObjects, GIF]
 		patterns.push([
-			moment().format('YYYY-MM-DD HH:mm:ss'),
+			randomTime(),
 			random.patterns[possible[rand]],
 			Math.random() < P_DESCRIP ? casual.sentence : null,
 			Math.floor(Math.random() * 13) + 2,
@@ -84,7 +88,7 @@ function generatePatterns() {
 	return patterns;
 }
 
-// generate random records
+// generate random records, assuming users and patterns already exist in DB
 function generateRecords(cb) {
 	// get users
 	con.query('SELECT * FROM users;', function(err, users) {
@@ -114,7 +118,10 @@ function generateRecords(cb) {
 									};
 								}
 
+								// for each of this user's attempts at this pattern
 								for (var r = 0; r < attempts; r++) {
+									var time = randomTime();
+									
 									// add random record
 									records.push([
 										users[u].uid,
@@ -122,21 +129,27 @@ function generateRecords(cb) {
 										r == attempts - 1,
 										usingCatches ? catchScore : null,
 										!usingCatches ? timeScore.hours + ":" + timeScore.minutes + ":" + timeScore.seconds : null,
-										moment().format('YYYY-MM-DD HH:mm:ss'),
+										time,
 										Math.random() < P_VIDEO ? casual.url : null
 									]);
 
 
+									// if catch-based record
 									if (usingCatches) {
+										// increase catch score randomly
 										catchScore += Math.floor(Math.random() * 20);
-									} else {
-										timeScore.seconds++;
 
-										if (timeScore.seconds == 60) {
-											timeScore.seconds = 0;
+									// time-based record
+									} else {
+										// increase seconds of time score randomly
+										timeScore.seconds += Math.floor(Math.random() * 60);
+
+										// keep track of time accordingly
+										if (timeScore.seconds >= 60) {
+											timeScore.seconds %= 60;
 											timeScore.minutes++;
 
-											if (timeScore.minutes == 60) {
+											if (timeScore.minutes >= 60) {
 												timeScore.hours++;
 											}
 										}
@@ -180,13 +193,13 @@ con.query('INSERT INTO users (timeCreated, name, email, bio, isAdmin) VALUES ?;'
 
 		process.stdout.write('Adding random records... ');
 		generateRecords(function(err, records) {
-			console.log("Done.");
 			if (err) throw err;
 
 			con.query('INSERT INTO records (userUID, patternUID, isPersonalBest, catches, duration, timeRecorded, video) VALUES ?;', [records], function(err) {
 				if (err) throw err;
+				console.log("Done.");
+				console.log("Test data complete.");
 			});
-
 		});
 
 	});

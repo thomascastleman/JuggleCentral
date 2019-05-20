@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/thomascastleman/JuggleCentral.git"
   },
-  "author": "Thomas Castleman",
+  "author": "Thomas Castleman & Stewart Morris",
   "license": "MIT",
   "homepage": "https://github.com/thomascastleman/JuggleCentral/blob/master/README.md",
   "dependencies": {
