@@ -17,6 +17,9 @@ CREATE TABLE users (
 	PRIMARY KEY (uid)
 );
 
+-- create index on users' names for search engine
+CREATE FULLTEXT INDEX userIndex ON users(name);
+
 -- juggling patterns
 CREATE TABLE patterns (
 	uid INT NOT NULL AUTO_INCREMENT,
@@ -30,6 +33,9 @@ CREATE TABLE patterns (
 	avgHighScoreTime FLOAT,			-- average high score for time in this pattern (ms)
 	PRIMARY KEY (uid)
 );
+
+-- create index on pattern names & descriptions for search engine
+CREATE FULLTEXT INDEX patternIndex ON patterns(name, description);
 
 -- all reported attempts at events
 CREATE TABLE records (
