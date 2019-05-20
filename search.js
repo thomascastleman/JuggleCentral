@@ -50,7 +50,6 @@ module.exports = {
 
 							// scale all difficulties out of 10
 							for (var i = 0; i < patterns.length; i++) {
-								console.log(patterns[i].difficulty);
 								patterns[i].difficulty = 10 * patterns[i].difficulty / maxDiff;
 							}
 

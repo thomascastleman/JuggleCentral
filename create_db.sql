@@ -12,7 +12,7 @@ CREATE TABLE users (
 	email VARCHAR(64) UNIQUE,
 	bio TEXT,
 	isAdmin TINYINT(1),
-	score FLOAT,					-- sum of this user's high score record scores
+	score FLOAT DEFAULT 0,			-- sum of this user's high score record scores
 	userRank INT,					-- user's position in the leaderboard sorted / pooled by user score
 	PRIMARY KEY (uid)
 );

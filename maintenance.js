@@ -26,16 +26,33 @@ module.exports = {
 
 	// adds a new user to the DB, calls back on the created profile
 	addUser: function(name, email, bio, isAdmin, cb){
-		//check whether the required fields aren't null
-		if(name && email && isAdmin != undefined){
-			// insert the information into the database, and select the generated profile
-			con.query('INSERT INTO users (timeCreated, name, email, bio, isAdmin) VALUES (NOW(), ?, ?, ?, ?); SELECT * FROM users WHERE uid = LAST_INSERT_ID();', [name, email, bio, isAdmin], function(err, rows) {
-				if (!err && rows !== undefined && rows.length > 1 && rows[1].length > 0) {
-					// callback on new user's profile
-					cb(err, rows[1][0]);
+		// check whether the required fields aren't null
+		if(name && email && isAdmin != undefined) {
+			// get the score and user rank of the worst ranked existing user
+			con.query('SELECT score, userRank FROM users WHERE userRank = (SELECT MAX(userRank) FROM users) LIMIT 1;', function(err, rows) {
+				if (!err && rows !== undefined && rows.length > 0) {
+					var lowestRank = rows[0].userRank, lowestScore = rows[0].score, newUserRank;
+
+					// if lowest ranked user ALSO has 0 score, use same rank for this user
+					if (lowestScore == 0) {
+						newUserRank = lowestRank;
+					} else {
+						// if new user has worse score than lowest ranked user, use an even lower rank
+						newUserRank = lowestRank + 1;
+					}
+
+					// insert user info into the database, and select the generated profile
+					con.query('INSERT INTO users (timeCreated, userRank, name, email, bio, isAdmin) VALUES (NOW(), ?, ?, ?, ?, ?); SELECT * FROM users WHERE uid = LAST_INSERT_ID();', [newUserRank, name, email, bio, isAdmin], function(err, rows) {
+						if (!err && rows !== undefined && rows.length > 1 && rows[1].length > 0) {
+							// callback on new user's profile
+							cb(err, rows[1][0]);
+						} else {
+							// callback on the sql error.
+							cb(err || "Failed to add a new user.");
+						}
+					});
 				} else {
-					// callback on the sql error.
-					cb(err || "Failed to add a new user.");
+					cb(err || "Unable to determine the lowest ranked user to determine new user rank.");
 				}
 			});
 		}
