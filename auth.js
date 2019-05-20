@@ -7,6 +7,8 @@ var GoogleStrategy = require('passport-google-oauth20').Strategy;
 var querystring = require('querystring');
 var con = require('./database.js').connection;
 var creds = require('./credentials.js');
+var sys = require('./settings.js');
+var maintenance = require('./maintenance.js');
 
 module.exports = {
 
@@ -18,10 +20,26 @@ module.exports = {
 			// look up user in system by email
 			con.query('SELECT * FROM users WHERE email = ?;', [user._json.email], function(err, rows) {
 				if (!err && rows !== undefined && rows.length > 0) {
+					// store profile in session
 					user.local = rows[0];
+
+					// send user through
 					done(null, user);
 
-				// if no user exists
+				// if no user exists, test email against regular expression (or if no restriction, allow any new user)
+				} else if (!sys.emailDomainRestriction || sys.emailDomainRestriction.test(user._json.email)) {
+					// add a new non-admin user to the system
+					maintenance.addUser(user.displayName, user._json.email, null, 0, function(err, profile) {
+						if (!err) {
+							// add profile to session
+							user.local = profile;
+
+							// send user through
+							done(null, user);
+						} else {
+							done("The system failed to create a new user account with this email.", null);
+						}
+					});
 				} else {
 					done("The system failed to find a user account associated with the given email.", null);
 				}

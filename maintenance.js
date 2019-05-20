@@ -39,16 +39,22 @@ module.exports = {
 		Remove an existing record by UID
 		*/
 
+	// adds a new user to the DB, calls back on the created profile
 	addUser: function(name, email, bio, isAdmin, cb){
 		//check whether the required fields aren't null
 		if(name && email && isAdmin != undefined){
-			//insert the information into the database.
-			con.query('INSERT INTO users (timeCreated, name, email, bio, isAdmin) VALUES (NOW(), ?, ?, ?, ?);', [name, email, bio, isAdmin], function(err) {
-				//callback on the sql error.
-				cb(err);
+			// insert the information into the database, and select the generated profile
+			con.query('INSERT INTO users (timeCreated, name, email, bio, isAdmin) VALUES (NOW(), ?, ?, ?, ?); SELECT * FROM users WHERE uid = LAST_INSERT_ID();', [name, email, bio, isAdmin], function(err, rows) {
+				if (!err && rows !== undefined && rows.length > 1) {
+					// callback on new user's profile
+					cb(err, rows[1]);
+				} else {
+					// callback on the sql error.
+					cb(err || "Failed to add a new user.");
+				}
 			});
 		}
-		//if one of the fields is null, callback an error
+		// if one of the fields is null, callback on error
 		else{
 			cb("One or more of the required fields were not filled out correctly.");
 		}

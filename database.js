@@ -6,6 +6,7 @@ module.exports = {
 	    host: 'localhost',
 	    user: creds.MySQL_username,
 	    password: creds.MySQL_password,
-	    database: 'juggling'
+	    database: 'juggling',
+	    multipleStatements: true
 	})
 }
