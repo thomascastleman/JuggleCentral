@@ -7,27 +7,12 @@ var con = require('./database.js').connection;
 
 module.exports = {
 	/*
-	Admin:addUser(name, email, isAdmin, bio, cb)
-	Adds a new user account, with the given info (google sign-in for first time too)
-
-	User:editUser(uid, bio, cb)
-		Edits only the bio of the user because everything else is not mutable.
 
 	Admin:changeAdminStatus(userUID, isAdmin, cb)
 		Changes the admins status based on a 0,1 value.
 
 	Admin:removeUser(uid, cb)
 		Deletes a user account.
-
-	Admin:addPattern(name, description, numObjects, gif, cb)
-		Adds a new juggling pattern to the patterns table
-
-	Admin:editPattern(uid, name, description, numObjects, gif, cb)
-		Edits all fields of pattern.
-
-	Admin:removePattern(uid, cb)
-	Deletes the pattern (make hard to do)
-
 
 	User:addRecord(userUID, patternUID, catches, duration, timeRecorded, video, cb)
 		Adds a record linking a given user and pattern.
@@ -61,6 +46,7 @@ module.exports = {
 
 	},
 
+	// edits the attributes of an existing user profile
 	editUser: function(uid, bio, cb){
 		//check whether the uid parameter isn't null
 		if(uid != undefined){ 
@@ -97,6 +83,17 @@ module.exports = {
 			// run update query on specific pattern
 			con.query('UPDATE patterns SET name = ?, description = ?, numObjects = ?, GIF = ? WHERE uid = ?;', [name, description, numObjects, gif, uid], function(err) {
 				cb(err);
+
+
+
+
+				// but this could cause changes too
+
+
+
+
+
+
 			});
 		} else {
 			// error on insufficient fields

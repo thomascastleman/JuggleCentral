@@ -15,6 +15,7 @@ module.exports = {
 
 		// send user's session info (for testing auth)
 		app.get('/', function(req, res) {
+			// debug
 			res.send(req.user || "There is no session for this user.");
 		});
 
