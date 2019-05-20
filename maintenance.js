@@ -148,7 +148,7 @@ module.exports = {
 		// 		cb(err);
 		// 	}
 		// });
-	}
+	},
 
 	//----------------------------------//
 	//		NEEDS IMPLEMENTATION		//

@@ -9,7 +9,26 @@ module.exports = {
 
 	// calculate all global user scores
 	calcAllUserScores: function(cb) {
-
+		// get the score of each users best records,
+		con.query('SELECT r.userUID, r.score, p.difficulty as patternDifficulty FROM records r JOIN patterns p ON r.patternUID = p.uid WHERE r.isPersonalBest = 1 ORDER BY r.userUID;', [], function(err, rows){
+			// if there isn't an sql error
+			if(!err && rows != undefined){
+				//if there is some iformation
+				if(rows.length > 0){
+					
+					//----------------------------------//
+					//		NEEDS IMPLEMENTATION		//
+					//----------------------------------//
+					// this will add up all of the user's scores and then insert them into the db.
+				}
+				else{
+					cb("There are no records to calculate user scores from.");
+				}
+			}
+			else{
+				cb("There was an error with retrieval of record information.");
+			}
+		});
 	},
 
 	// calcualte global user scores for a subset of users, by UID
