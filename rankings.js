@@ -7,12 +7,21 @@ var con = require('./database.js').connection;
 
 module.exports = {
 
-	/*
-	calcLocalRanks(patternUID, cb)
-		Takes the record scores in both categories of a given pattern and uses them to calculate record rankings for all high score records in that pattern. 
 
-	calcGlobalRanks(cb)
-		Transfers the user scores into user ranks for all users.
+	/*	convert existing record scores for both time- and catch-based records into ranks 
+		for all the personal best records in this pattern */
+	calcLocalRanks: function(patternUID, cb) {
+
+	},
+
+	// convert existing user scores into user ranks for all users
+	calcGlobalRanks: function(cb) {
+
+	},
+
+
+
+	/*
 
 	[DONE in addUser]
 	On New User:

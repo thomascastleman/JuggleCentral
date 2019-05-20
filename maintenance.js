@@ -106,49 +106,49 @@ module.exports = {
 	//----------------------------------//
 	//		NEEDS IMPLEMENTATION		//
 	//----------------------------------//
-	// // edits all fields of an existing pattern
-	// editPattern: function(uid, name, description, numObjects, gif, cb) {
-	// 	// ensure name & number of objects exist
-	// 	if (name && numObjects && numObjects > 0) {
-	// 		// run update query on specific pattern
-	// 		con.query('UPDATE patterns SET name = ?, description = ?, numObjects = ?, GIF = ? WHERE uid = ?;', [name, description, numObjects, gif, uid], function(err) {
-	// 			cb(err);
+	// edits all fields of an existing pattern
+	editPattern: function(uid, name, description, numObjects, gif, cb) {
+		// // ensure name & number of objects exist
+		// if (name && numObjects && numObjects > 0) {
+		// 	// run update query on specific pattern
+		// 	con.query('UPDATE patterns SET name = ?, description = ?, numObjects = ?, GIF = ? WHERE uid = ?;', [name, description, numObjects, gif, uid], function(err) {
+		// 		cb(err);
 
 
 
 
-	// 			// but this could cause changes too
+		// 		// but this could cause changes too
 
 
 
 
 
 
-	// 		});
-	// 	} else {
-	// 		// error on insufficient fields
-	// 		cb("All required pattern fields must be filled out.");
-	// 	}
-	// },
+		// 	});
+		// } else {
+		// 	// error on insufficient fields
+		// 	cb("All required pattern fields must be filled out.");
+		// }
+	},
 
 	//----------------------------------//
 	//		NEEDS IMPLEMENTATION		//
 	//----------------------------------//
-	// // deletes an existing pattern and all associated records
-	// removePattern: function(uid, cb) {
-	// 	// remove the pattern from patterns table
-	// 	con.query('DELETE FROM patterns WHERE uid = ?;', [uid], function(err) {
-	// 		if (!err) {
+	// deletes an existing pattern and all associated records
+	removePattern: function(uid, cb) {
+		// // remove the pattern from patterns table
+		// con.query('DELETE FROM patterns WHERE uid = ?;', [uid], function(err) {
+		// 	if (!err) {
 
 
-	// 			// now recalc user score, and update global rankings. (this should be its own function)
+		// 		// now recalc user score, and update global rankings. (this should be its own function)
 
 
-	// 		} else {
-	// 			cb(err);
-	// 		}
-	// 	});
-	// }
+		// 	} else {
+		// 		cb(err);
+		// 	}
+		// });
+	}
 
 	//----------------------------------//
 	//		NEEDS IMPLEMENTATION		//
@@ -158,12 +158,17 @@ module.exports = {
 
 	},
 
-	//----------------------------------//
-	//		NEEDS IMPLEMENTATION		//
-	//----------------------------------//
-	// edit the pattern, number of catches, duration, or video link of one of your records. 
-	editRecord: function(uid, patternUID, catches, duration, video, cb) {
-
+	// edit the video link of one of your records. 
+	editVideoLink: function(uid, video, cb) {
+		// if valid UID
+		if (uid && uid > 0) {
+			// update this record, replacing existing video link
+			con.query('UPDATE records SET video = ? WHERE uid = ?;', [video, uid], function(err) {
+				cb(err);
+			});
+		} else {
+			cb("Unable to update video link, as invalid record identifier was given.");
+		}
 	},
 
 	//----------------------------------//
