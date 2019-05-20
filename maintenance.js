@@ -74,6 +74,9 @@ module.exports = {
 		}
 	},
 
+	//----------------------------------//
+	//		NEEDS IMPLEMENTATION		//
+	//----------------------------------//
 	// permanently deletes a user account
 	removeUser: function(uid, cb) {
 
@@ -98,6 +101,9 @@ module.exports = {
 		}
 	},
 
+	//----------------------------------//
+	//		NEEDS IMPLEMENTATION		//
+	//----------------------------------//
 	// // edits all fields of an existing pattern
 	// editPattern: function(uid, name, description, numObjects, gif, cb) {
 	// 	// ensure name & number of objects exist
@@ -123,6 +129,9 @@ module.exports = {
 	// 	}
 	// },
 
+	//----------------------------------//
+	//		NEEDS IMPLEMENTATION		//
+	//----------------------------------//
 	// // deletes an existing pattern and all associated records
 	// removePattern: function(uid, cb) {
 	// 	// remove the pattern from patterns table
@@ -139,25 +148,28 @@ module.exports = {
 	// 	});
 	// }
 
-	
+	//----------------------------------//
+	//		NEEDS IMPLEMENTATION		//
+	//----------------------------------//
 	// adds a record linking a given user and pattern
 	addRecord: function(userUID, patternUID, catches, duration, timeRecorded, video, cb) {
 
 	},
 
+	//----------------------------------//
+	//		NEEDS IMPLEMENTATION		//
+	//----------------------------------//
 	// edit the pattern, number of catches, duration, or video link of one of your records. 
 	editRecord: function(uid, patternUID, catches, duration, video, cb) {
 
 	},
 
+	//----------------------------------//
+	//		NEEDS IMPLEMENTATION		//
+	//----------------------------------//
 	// remove an existing record by UID
 	removeRecord: function(uid, cb) {
 
 	}
 
 }
-
-
-module.exports.changeAdminStatus(-41, 0, function(err) {
-	if (err) throw err;
-})
