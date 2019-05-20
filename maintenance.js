@@ -8,8 +8,6 @@ var con = require('./database.js').connection;
 module.exports = {
 	/*
 
-	Admin:changeAdminStatus(userUID, isAdmin, cb)
-		Changes the admins status based on a 0,1 value.
 
 	Admin:removeUser(uid, cb)
 		Deletes a user account.
@@ -79,6 +77,20 @@ module.exports = {
 		}
 	},
 
+	// Changes the admins status based on a 0,1 value.	
+	changeAdminStatus: function(userUID, isAdmin, cb){
+		//ensure userUID and isAdmin exist
+		if(userUID != undefined && isAdmin != undefined && isAdmin >= 0 && isAdmin <= 1){
+			//change the admin status of the user
+			con.query('UPDATE users SET isAdmin = ? WHERE uid = ?;', [isAdmin, userUID], function(err){
+				cb(err);
+			});
+
+		}else{
+			cb("All required user fields must be filled out correctly");
+		}
+	},
+		
 	// adds a new juggling pattern to the patterns table, calls back on created pattern profile
 	addPattern: function(name, description, numObjects, gif, cb) {
 		// ensure name & number of objects exist
