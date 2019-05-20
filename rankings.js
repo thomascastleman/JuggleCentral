@@ -19,24 +19,54 @@ module.exports = {
 					//----------------------------------//
 					//		NEEDS IMPLEMENTATION		//
 					//----------------------------------//
-					// this will add up all of the user's scores and then insert them into the db.
-					//
-					// var userScores = {};
-					// var insertQuery = "";
-					// var insertVALUES = [];
-					// var curUserUID = 0;
-					// for each record
-					// 	if userUID associated with this record does not equal the curUserUID
-					// 		if userScores[curUserUID] exists
-					//			insertQuery += "WHEN uid = ? THEN ?; "
-					//			insertValues.push(curUserUID, userScores[curUserUID]);
-					//      update the curUserUID to the userUID associated with this record
-					// 		userScores[the new userUID] = 0
-					//
-					// 	userScores[the userUID associated with that record] += (record's score * record's associated pattern's difficulty)
-					// con.query('UPDATE users SET score = ' + insertQuery + 'ELSE score END;', [insertValues], function(err){
-						//cb(err);
-					///});
+					/*
+						this will add up all of the user's scores and then insert them into the db.
+						
+						var userScores = {};
+						var insertQuery = "";
+						var insertVALUES = [];
+						var curUserUID = 0;
+
+						for each record
+							if userUID associated with this record does not equal the curUserUID
+								if userScores[curUserUID] exists
+									insertQuery += "WHEN uid = ? THEN ? "
+									insertValues.push(curUserUID, userScores[curUserUID]);
+						     update the curUserUID to the userUID associated with this record
+								userScores[the new userUID] = 0
+						
+							userScores[the userUID associated with that record] += (record's score * record's associated pattern's difficulty)
+
+						con.query('UPDATE users SET score = CASE ' + insertQuery + 'ELSE score END;', [insertValues], function(err){
+							cb(err);
+						});
+					*/
+
+
+
+					/*
+
+					Here's my take on the matter:
+
+						userScores = {}
+
+						for each record (userUID, score, difficulty)
+							if userScores[userUID] does not exist
+								userScores[userUID] = 0
+
+							userScores[userUID] += (record score) * (difficulty)
+
+
+						query = ""
+						insert = []
+						for each userUID in userScores object
+							add userUID, userScores[userUID] to insert
+							add " WHEN uid = ? THEN ?" to query
+
+
+						if query non-empty, run 'UPDATE users SET score = CASE' + query + ' ELSE score END;'
+						
+					*/
 
 				}
 				else{
@@ -87,12 +117,19 @@ module.exports = {
 
 	// get the current max average high score values for both time and catches across all patterns
 	getMaxAvgHighScores: function(cb) {
+		/*
+			Use a con.query to SELECT the MAX() of the avgHighScoreCatch and avgHighScoreTime columns from the patterns table.
+			Callback on any errors, and both values
+			cb(err, maxAvgCatch, maxAvgTime)
+		*/
 
 	},
 
 	// determine the more popular scoring method (time- or catch-based) for a given pattern
 	determinePopularScoringMethod: function(patternUID, cb) {
-
+		/*
+			
+		*/
 	}
 
 	/*
