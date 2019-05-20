@@ -30,9 +30,9 @@ module.exports = {
 		if(name && email && isAdmin != undefined){
 			// insert the information into the database, and select the generated profile
 			con.query('INSERT INTO users (timeCreated, name, email, bio, isAdmin) VALUES (NOW(), ?, ?, ?, ?); SELECT * FROM users WHERE uid = LAST_INSERT_ID();', [name, email, bio, isAdmin], function(err, rows) {
-				if (!err && rows !== undefined && rows.length > 1) {
+				if (!err && rows !== undefined && rows.length > 1 && rows[1].length > 0) {
 					// callback on new user's profile
-					cb(err, rows[1]);
+					cb(err, rows[1][0]);
 				} else {
 					// callback on the sql error.
 					cb(err || "Failed to add a new user.");
@@ -62,13 +62,18 @@ module.exports = {
 		}
 	},
 
-	// adds a new juggling pattern to the patterns table
+	// adds a new juggling pattern to the patterns table, calls back on created pattern profile
 	addPattern: function(name, description, numObjects, gif, cb) {
 		// ensure name & number of objects exist
 		if (name && numObjects && numObjects > 0) {
 			// run insert query
-			con.query('INSERT INTO patterns (timeCreated, name, description, numObjects, GIF) VALUES (NOW(), ?, ?, ?, ?);', [name, description, numObjects, gif], function(err) {
-				cb(err);
+			con.query('INSERT INTO patterns (timeCreated, name, description, numObjects, GIF) VALUES (NOW(), ?, ?, ?, ?); SELECT * FROM patterns WHERE uid = LAST_INSERT_ID();', [name, description, numObjects, gif], function(err, rows) {
+				if (!err && rows !== undefined && rows.length > 1 && rows[1].length > 0) {
+					// callback on profile for new pattern
+					cb(err, rows[1][0]);
+				} else {
+					cb(err || "Failed to add new pattern.");
+				}
 			});
 		} else {
 			// error on insufficient fields

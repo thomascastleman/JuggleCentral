@@ -9,7 +9,7 @@ CREATE TABLE users (
 	uid INT NOT NULL AUTO_INCREMENT,
 	timeCreated DATETIME,
 	name VARCHAR(64),
-	email VARCHAR(64),
+	email VARCHAR(64) UNIQUE,
 	bio TEXT,
 	isAdmin TINYINT(1),
 	score FLOAT,					-- sum of this user's high score record scores
@@ -21,7 +21,7 @@ CREATE TABLE users (
 CREATE TABLE patterns (
 	uid INT NOT NULL AUTO_INCREMENT,
 	timeCreated DATETIME,
-	name VARCHAR(32),
+	name VARCHAR(32) UNIQUE,
 	description TEXT,
 	numObjects INT,					-- number of objects used in this pattern
 	GIF VARCHAR(512),
