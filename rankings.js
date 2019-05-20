@@ -7,25 +7,58 @@ var con = require('./database.js').connection;
 
 module.exports = {
 
+	// calculate all global user scores
+	calcAllUserScores: function(cb) {
+
+	},
+
+	// calcualte global user scores for a subset of users, by UID
+	calcUserScores: function(userUIDs, cb) {
+
+	},
+
+	// calculate the record scores for all PB records within a given pattern
+	calcRecordScores: function(patternUID, cb) {
+
+	},
+
+	// calculate the difficulties of a subset of patterns
+	calcPatternDifficulties: function(patternUIDs, cb) {
+
+	},
 
 	/*	convert existing record scores for both time- and catch-based records into ranks 
 		for all the personal best records in this pattern */
-	calcLocalRanks: function(patternUID, cb) {
+	updateLocalRanks: function(patternUID, cb) {
 
 	},
 
 	// convert existing user scores into user ranks for all users
-	calcGlobalRanks: function(cb) {
+	updateGlobalRanks: function(cb) {
 
 	},
 
+	// determine the UIDs of the patterns in which a given user competes
+	affectedPatternsByUser: function(userUID, cb) {
 
+	},
+
+	// determine the UIDs of users who compete in a given pattern
+	affectedUsersByPattern: function(patternUID, cb) {
+
+	},
+
+	// get the current max average high score values for both time and catches across all patterns
+	getMaxAvgHighScores: function(cb) {
+
+	},
+
+	// determine the more popular scoring method (time- or catch-based) for a given pattern
+	determinePopularScoringMethod: function(patternUID, cb) {
+
+	}
 
 	/*
-
-	[DONE in addUser]
-	On New User:
-		Set user score to 0. Get user with largest rank (worst). If scores same (both 0), use same rank. If score greater, use rank + 1
 
 	On Delete User:
 		Determine the patterns in which this user competed. Remove their records.
@@ -42,7 +75,7 @@ module.exports = {
 			Recalc user scores of those who competed in affected patterns.
 		Recalc rank for everyone.
 
-	On Edit / Delete / New Record:
+	On Delete / New Record:
 		handleRecordChange(patternUID, affectedCategory, cb)
 			Recalc record scores (in the affected category) in this pattern, use to update ranks in this pattern.
 			If affectedCategory is the more popular category for this pattern: (if it’s not nothing changes)
@@ -61,7 +94,7 @@ module.exports = {
 			Recalc user score of every user competing in this pattern, and update global rank
 
 	On Delete Pattern:
-		Recalc user scores, and update global rank.
+		Recalc user scores of affected users, and update all global rank.
 
 	*/
 
