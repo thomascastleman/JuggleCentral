@@ -14,6 +14,7 @@ module.exports = {
 	calcGlobalRanks(cb)
 		Transfers the user scores into user ranks for all users.
 
+	[DONE in addUser]
 	On New User:
 		Set user score to 0. Get user with largest rank (worst). If scores same (both 0), use same rank. If score greater, use rank + 1
 
@@ -46,9 +47,9 @@ module.exports = {
 						Recalc user scores for users competing in this pattern
 					Recalculate global rank for everyone.
 
-
 	On Edit Pattern:
-
+		If numObjects changed: (this changes difficulty of this pattern & therefore the user score of every competing user)
+			Recalc user score of every user competing in this pattern, and update global rank
 
 	On Delete Pattern:
 		Recalc user scores, and update global rank.
