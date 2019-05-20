@@ -6,24 +6,6 @@
 var con = require('./database.js').connection;
 
 module.exports = {
-<<<<<<< HEAD
-	/*
-
-
-	Admin:removeUser(uid, cb)
-		Deletes a user account.
-
-	User:addRecord(userUID, patternUID, catches, duration, timeRecorded, video, cb)
-		Adds a record linking a given user and pattern.
-
-	User:editRecord(uid, patternUID, catches, duration, video, cb)
-		Edit the pattern, number of catches, duration, or video link of one of your records. 
-
-	User:removeRecord(uid, cb)
-		Remove an existing record by UID
-		*/
-=======
->>>>>>> ee116cd19278ef5b399a1672dbf3ed932fe03db8
 
 	// adds a new user to the DB, calls back on the created profile
 	addUser: function(name, email, bio, isAdmin, cb){
@@ -79,22 +61,6 @@ module.exports = {
 		}
 	},
 
-<<<<<<< HEAD
-	// Changes the admins status based on a 0,1 value.	
-	changeAdminStatus: function(userUID, isAdmin, cb){
-		//ensure userUID and isAdmin exist
-		if(userUID != undefined && isAdmin != undefined && isAdmin >= 0 && isAdmin <= 1){
-			//change the admin status of the user
-			con.query('UPDATE users SET isAdmin = ? WHERE uid = ?;', [isAdmin, userUID], function(err){
-				cb(err);
-			});
-
-		}else{
-			cb("All required user fields must be filled out correctly");
-		}
-	},
-		
-=======
 	// changes the admin status based on a 0,1 value
 	changeAdminStatus: function(uid, isAdmin, cb) {
 		// ensure positive UID exists and isAdmin is defined
@@ -116,7 +82,6 @@ module.exports = {
 
 	},
 
->>>>>>> ee116cd19278ef5b399a1672dbf3ed932fe03db8
 	// adds a new juggling pattern to the patterns table, calls back on created pattern profile
 	addPattern: function(name, description, numObjects, gif, cb) {
 		// ensure name & number of objects exist
