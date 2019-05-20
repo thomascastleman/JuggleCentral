@@ -41,7 +41,7 @@ module.exports = {
 		}
 		// if one of the fields is null, callback on error
 		else{
-			cb("One or more of the required fields were not filled out correctly.");
+			cb("One or more of the required fields to add a user were not filled out correctly.");
 		}
 	},
 
@@ -61,6 +61,7 @@ module.exports = {
 		}
 	},
 
+<<<<<<< HEAD
 	// changes the admin status based on a 0,1 value
 	changeAdminStatus: function(uid, isAdmin, cb) {
 		// ensure positive UID exists and isAdmin is defined
@@ -71,6 +72,19 @@ module.exports = {
 			});
 		} else {
 			cb("Unable to change admin status, as insufficient identifier or admin status information given.")
+=======
+	// Changes the admins status based on a 0,1 value.	
+	changeAdminStatus: function(userUID, isAdmin, cb){
+		//ensure userUID and isAdmin exist
+		if(userUID != undefined && isAdmin != undefined && isAdmin >= 0 && isAdmin <= 1){
+			//change the admin status of the user
+			con.query('UPDATE users SET isAdmin = ? WHERE uid = ?;', [isAdmin, userUID], function(err){
+				cb(err);
+			});
+
+		}else{
+			cb("Unable to change admin status, as insufficient identifier or admin status information given.");
+>>>>>>> e7f9a77cd8d19fb5672c0939622d836ce0279a52
 		}
 	},
 
