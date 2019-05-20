@@ -20,6 +20,24 @@ module.exports = {
 					//		NEEDS IMPLEMENTATION		//
 					//----------------------------------//
 					// this will add up all of the user's scores and then insert them into the db.
+					//
+					// var userScores = {};
+					// var insertQuery = "";
+					// var insertVALUES = [];
+					// var curUserUID = 0;
+					// for each record
+					// 	if userUID associated with this record does not equal the curUserUID
+					// 		if userScores[curUserUID] exists
+					//			insertQuery += "WHEN uid = ? THEN ?; "
+					//			insertValues.push(curUserUID, userScores[curUserUID]);
+					//      update the curUserUID to the userUID associated with this record
+					// 		userScores[the new userUID] = 0
+					//
+					// 	userScores[the userUID associated with that record] += (record's score * record's associated pattern's difficulty)
+					// con.query('UPDATE users SET score = ' + insertQuery + 'ELSE score END;', [insertValues], function(err){
+						//cb(err);
+					///});
+
 				}
 				else{
 					cb("There are no records to calculate user scores from.");
@@ -31,7 +49,7 @@ module.exports = {
 		});
 	},
 
-	// calcualte global user scores for a subset of users, by UID
+	// calculate global user scores for a subset of users, by UID
 	calcUserScores: function(userUIDs, cb) {
 
 	},
