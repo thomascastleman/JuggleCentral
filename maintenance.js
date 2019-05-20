@@ -6,23 +6,6 @@
 var con = require('./database.js').connection;
 
 module.exports = {
-	/*
-
-	Admin:changeAdminStatus(userUID, isAdmin, cb)
-		Changes the admins status based on a 0,1 value.
-
-	Admin:removeUser(uid, cb)
-		Deletes a user account.
-
-	User:addRecord(userUID, patternUID, catches, duration, timeRecorded, video, cb)
-		Adds a record linking a given user and pattern.
-
-	User:editRecord(uid, patternUID, catches, duration, video, cb)
-		Edit the pattern, number of catches, duration, or video link of one of your records. 
-
-	User:removeRecord(uid, cb)
-		Remove an existing record by UID
-		*/
 
 	// adds a new user to the DB, calls back on the created profile
 	addUser: function(name, email, bio, isAdmin, cb){
@@ -60,23 +43,40 @@ module.exports = {
 		else{
 			cb("One or more of the required fields were not filled out correctly.");
 		}
-
 	},
 
-	// edits the attributes of an existing user profile
-	editUser: function(uid, bio, cb){
-		//check whether the uid parameter isn't null
-		if(uid != undefined){ 
+	// edits the bio of an existing user profile
+	editBio: function(uid, bio, cb){
+		// check whether the uid parameter isn't null
+		if (uid && uid > 0) {
 			//change the user's bio
 			con.query('UPDATE users SET bio = ? WHERE uid = ?;', [bio, uid], function(err){
-				//callback on the sql error
+				// callback on the sql error
 				cb(err);
 			});
 		}
-		//if the uid is null then callback the error.
-		else{
-			cb("There was no uid to edit students.");
+		// if the uid is null or negative then callback the error.
+		else {
+			cb("Unable to edit user, invalid identifier given.");
 		}
+	},
+
+	// changes the admin status based on a 0,1 value
+	changeAdminStatus: function(uid, isAdmin, cb) {
+		// ensure positive UID exists and isAdmin is defined
+		if (uid && uid > 0 && isAdmin != undefined) {
+			// update the user with this UID
+			con.query('UPDATE users SET isAdmin = ? WHERE uid = ?;', [isAdmin, uid], function(err) {
+				cb(err);
+			});
+		} else {
+			cb("Unable to change admin status, as insufficient identifier or admin status information given.")
+		}
+	},
+
+	// permanently deletes a user account
+	removeUser: function(uid, cb) {
+
 	},
 
 	// adds a new juggling pattern to the patterns table, calls back on created pattern profile
@@ -98,45 +98,66 @@ module.exports = {
 		}
 	},
 
-	// edits all fields of an existing pattern
-	editPattern: function(uid, name, description, numObjects, gif, cb) {
-		// ensure name & number of objects exist
-		if (name && numObjects && numObjects > 0) {
-			// run update query on specific pattern
-			con.query('UPDATE patterns SET name = ?, description = ?, numObjects = ?, GIF = ? WHERE uid = ?;', [name, description, numObjects, gif, uid], function(err) {
-				cb(err);
+	// // edits all fields of an existing pattern
+	// editPattern: function(uid, name, description, numObjects, gif, cb) {
+	// 	// ensure name & number of objects exist
+	// 	if (name && numObjects && numObjects > 0) {
+	// 		// run update query on specific pattern
+	// 		con.query('UPDATE patterns SET name = ?, description = ?, numObjects = ?, GIF = ? WHERE uid = ?;', [name, description, numObjects, gif, uid], function(err) {
+	// 			cb(err);
 
 
 
 
-				// but this could cause changes too
+	// 			// but this could cause changes too
 
 
 
 
 
 
-			});
-		} else {
-			// error on insufficient fields
-			cb("All required pattern fields must be filled out.");
-		}
+	// 		});
+	// 	} else {
+	// 		// error on insufficient fields
+	// 		cb("All required pattern fields must be filled out.");
+	// 	}
+	// },
+
+	// // deletes an existing pattern and all associated records
+	// removePattern: function(uid, cb) {
+	// 	// remove the pattern from patterns table
+	// 	con.query('DELETE FROM patterns WHERE uid = ?;', [uid], function(err) {
+	// 		if (!err) {
+
+
+	// 			// now recalc user score, and update global rankings. (this should be its own function)
+
+
+	// 		} else {
+	// 			cb(err);
+	// 		}
+	// 	});
+	// }
+
+	
+	// adds a record linking a given user and pattern
+	addRecord: function(userUID, patternUID, catches, duration, timeRecorded, video, cb) {
+
 	},
 
-	// deletes an existing pattern and all associated records
-	removePattern: function(uid, cb) {
-		// remove the pattern from patterns table
-		con.query('DELETE FROM patterns WHERE uid = ?;', [uid], function(err) {
-			if (!err) {
+	// edit the pattern, number of catches, duration, or video link of one of your records. 
+	editRecord: function(uid, patternUID, catches, duration, video, cb) {
 
+	},
 
-				// now recalc user score, and update global rankings. (this should be its own function)
+	// remove an existing record by UID
+	removeRecord: function(uid, cb) {
 
-
-			} else {
-				cb(err);
-			}
-		});
 	}
 
 }
+
+
+module.exports.changeAdminStatus(-41, 0, function(err) {
+	if (err) throw err;
+})
