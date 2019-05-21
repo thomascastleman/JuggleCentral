@@ -229,21 +229,51 @@ module.exports = {
 		*/
 	},
 
-	// recalculate and store the average high score for time and catches for a given subset of patterns
+	/*	Recalculate and store the average personal best for time and catches for a given subset of patterns.
+		If no subset given, will update average PB scores for all patterns. */
 	updateAvgHighScores: function(patternUIDs, cb) {
 		/*
-
-			NEEDS PSEUDO still I didn't actually write anything
-
-			------ This may be useful: -------
-
 			constraint = ""
 
 			if patternUIDs array given
-				constraint = " AND r.patternUID IN (" + patternUIDs.join(',') + ")";
+				constraint = " AND patternUID IN (" + patternUIDs.join(',') + ")";
+
+			SELECT * FROM records WHERE isPersonalBest = 1' + constraint + ' ORDER BY patternUID;'
+
+			catches = [], catchQuery = ''
+			times = [], timeQuery = ''
+
+			for i = 0 to num records
+				j = i
+
+				numCatchRecords = 0, catchSum = 0
+				numTimeRecords = 0, timeSum = 0
+
+				currentPatternUID = records[i].patternUID
+
+				while records[j].patternUID = currentPatternUID
+					
+					if records[j].catches is NOT null
+						catchSum += records[j].catches
+						numCatchRecords++
+
+					else if records[j].time is NOT null
+						timeSum += toSec(records[j].duration)
+						numTimeRecords++
+
+					j++
+
+				i = j
+				catches.push(currentPatternUID, numCatchRecords > 0 ? catchSum / numCatchRecords : 0)
+				catchQuery += ' WHEN uid = ? THEN ?'
+
+				times.push(currentPatternUID, numTimeRecords > 0 ? timeSum / numTimeRecords : 0)
+				timeQuery += ' WHEN uid = ? THEN ?'
 
 
-			SELECT r.*, p.uid FROM records r LEFT JOIN patterns p ON r.patternUID = p.uid WHERE r.isPersonalBest = 1' + constraint + ' ORDER BY r.patternUID;'
+			insert = add all of the times array to the END of the catches array
+
+			Run this: 'UPDATE patterns SET avgHighScoreCatch = CASE' + catchQuery + ' ELSE avgHighScoreCatch END, avgHighScoreTime = CASE' + timeQuery + ' ELSE avgHighScoreTime END;'
 		*/
 	},
 
