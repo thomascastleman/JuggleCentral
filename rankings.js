@@ -88,8 +88,14 @@ module.exports = {
 		});
 	},
 
-	// calculate the record scores for all PB records within a given subset of patterns
-	calcRecordScores: function(patternUIDs, cb) {
+	// convert existing user scores into user ranks for all users
+	updateGlobalRanks: function(cb) {
+		
+	},
+
+	/*	Calculate the record scores for all PB records within a given subset of patterns,
+		and update the local rank of each record */
+	updateRecordScoresAndLocalRanks: function(patternUIDs, cb) {
 		// query constraint to limit records to subset of patterns
 		var constraint = "";
 
@@ -107,37 +113,42 @@ module.exports = {
 			
 			for i from 0 to records.length
 				j = i
+				rank = 1
 
 				if records[i].catches NOT null
 					while records[j].catches also NOT null:
 						records[j].score = records[j].catches / records[i].catches
+
+						if i != j & records[j].score < records[j - 1].score
+							rank++
+						
+						records[j].rank = rank
+
 						j++
 
 				i = j
+				rank = 1
 
 				if records[i].duration NOT null
 					while records[j].duration also NOT null:
 						records[j].score = toSec(records[j].duration) / toSec(records[i].duration)
+
+						if i != j & records[j].score < records[j - 1].score
+							rank++
+						
+						records[j].rank = rank
+
 						j++
 
 				i = j
+
+
 
 		*/
 	},
 
 	// calculate the difficulties of a subset of patterns
 	calcPatternDifficulties: function(patternUIDs, cb) {
-
-	},
-
-	/*	convert existing record scores for both time- and catch-based records into ranks 
-		for all the personal best records in this pattern */
-	updateLocalRanks: function(patternUID, cb) {
-
-	},
-
-	// convert existing user scores into user ranks for all users
-	updateGlobalRanks: function(cb) {
 
 	},
 
@@ -172,7 +183,8 @@ module.exports = {
 	/*
 
 	On Delete User:
-		Determine the patterns in which this user competed. Remove their records.
+		Determine the patterns in which this user competed. Remove their records. (affectedPatternsByUser)
+
 		Update record scores & local ranks in all patterns they competed in.
 		Find the max avg time high score, and max avg catch high score across all patterns. (current maxes)
 		For each of the affected patterns:
@@ -202,6 +214,7 @@ module.exports = {
 
 	On Edit Pattern:
 		If numObjects changed: (this changes difficulty of this pattern & therefore the user score of every competing user)
+			Recalc THIS pattern's difficulty (everything you need is stored)
 			Recalc user score of every user competing in this pattern, and update global rank
 
 	On Delete Pattern:
