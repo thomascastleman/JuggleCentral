@@ -90,7 +90,7 @@ module.exports = {
 
 	// convert existing user scores into user ranks for all users
 	updateGlobalRanks: function(cb) {
-		
+
 	},
 
 	/*	Calculate the record scores for all PB records within a given subset of patterns,
@@ -152,13 +152,18 @@ module.exports = {
 
 	},
 
-	// determine the UIDs of the patterns in which a given user competes
-	affectedPatternsByUser: function(userUID, cb) {
+	// determine the UIDs of all patterns affected by a subset of users (which patterns do they have records in)
+	affectedPatternsByUser: function(userUIDs, cb) {
 
 	},
 
 	// determine the UIDs of users who compete in a given pattern
 	affectedUsersByPattern: function(patternUID, cb) {
+
+	},
+
+	// recalculate and store the average high score for time and catches for a given subset of patterns
+	updateAvgHighScores: function(patternUIDs, cb) {
 
 	},
 
@@ -183,42 +188,69 @@ module.exports = {
 	/*
 
 	On Delete User:
-		Determine the patterns in which this user competed. Remove their records. (affectedPatternsByUser)
+		Determine the patterns in which this user competed. Then remove their records. (affectedPatternsByUser & DELETE query)
 
-		Update record scores & local ranks in all patterns they competed in.
-		Find the max avg time high score, and max avg catch high score across all patterns. (current maxes)
+		Update record scores & local ranks in all patterns they competed in. (updateRecordScoresAndLocalRanks)
+
+		Find the max avg time high score, and max avg catch high score across all patterns. (current maxes) (getMaxAvgHighScores)
+
 		For each of the affected patterns:
-			Recalc & store avg high score for both categories.
-			Keep track of new max avg time and catch high scores
-		If either of the maxes changed:
-			Recalc difficulties for all patterns
-			Recalc all the user scores, use to update global ranks.
+			Recalc & store avg high score for both categories. (updateAvgHighScores)
+
+		Find the maxes again, and compare (getMaxAvgHighScores)
+
+		If either of maxes changed in value:
+			Recalc difficulties for all patterns (calcPatternDifficulties)
+			Recalc all the user scores, use to update global ranks. (calcUserScores & updateGlobalRanks)
+
 		If not:
-			Recalc difficulties for all affected patterns.
-			Recalc user scores of those who competed in affected patterns.
-		Recalc rank for everyone.
+			Recalc difficulties for all affected patterns. (calcPatternDifficulties with subset)
+			Recalc user scores of those who competed in affected patterns. (affectedPatternsByUser with subset, calcUserScores with subset)
+
+		Recalc rank for everyone. (updateGlobalRanks)
+
+
+
+
 
 	On Delete / New Record:
-		handleRecordChange(patternUID, affectedCategory, cb)
-			Recalc record scores (in the affected category) in this pattern, use to update ranks in this pattern.
-			If affectedCategory is the more popular category for this pattern: (if it’s not nothing changes)
-				Find prevMax, the current max avg high score (all patterns) for the same category that this record is in (these are stored so just retrieve max).
-				Recalculate avg high score in this pattern for this category, avg, and store in DB.
-					If avg is greater than prevMax,
-						Recalc all pattern difficulties.
-						Recalc all user scores, and use to update user ranks.
-					If avg is less than or equal to prevMax,
-						Recalc difficulty for only this pattern
-						Recalc user scores for users competing in this pattern
-					Recalculate global rank for everyone.
+		Determine category (time or catches) of this record.
+
+		Recalc record scores in this pattern, use to update ranks in this pattern. (updateRecordScoresAndLocalRanks)
+
+		If affected Category is the more popular category for this pattern: (if it’s not nothing changes) (determinePopularScoringMethod)
+
+			Find prevMax, the current max avg high score (all patterns) for the same category that this record is in (getMaxAvgHighScores)
+
+			Recalculate avg high score in this pattern for this category, avg, and store in DB. (updateAvgHighScores)
+
+			Find newMax for this category (getMaxAvgHighScores)
+
+				If max changed
+
+					Recalc all pattern difficulties. (calcPatternDifficulties on all)
+
+					Recalc all user scores (calcUserScores on all)
+
+
+				If max DID NOT change
+
+					Recalc difficulty for only this pattern (calcPatternDifficulties for just this one)
+
+					Recalc user scores for users competing in this pattern (affectedUsersByPattern, and calcUserScores for subset)
+
+				Recalculate global rank for everyone. (updateGlobalRanks)
+
 
 	On Edit Pattern:
 		If numObjects changed: (this changes difficulty of this pattern & therefore the user score of every competing user)
-			Recalc THIS pattern's difficulty (everything you need is stored)
-			Recalc user score of every user competing in this pattern, and update global rank
+			Recalc THIS pattern's difficulty (everything you need is stored) (calcPatternDifficulties for just this pattern)
+			Recalc user score of every user competing in this pattern, and update global rank (affectedUsersByPattern, and calcUserScores for subset, and updateGlobalRanks)
+
+
 
 	On Delete Pattern:
-		Recalc user scores of affected users, and update all global rank.
+		Recalc user scores of affected users, and update all global rank. (affectedUsersByPattern, calcUserScores, updateGlobalRanks)
 
 	*/
 
