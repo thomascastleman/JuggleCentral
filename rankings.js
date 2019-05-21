@@ -286,16 +286,27 @@ module.exports = {
 		*/
 	},
 
-	// determine the more popular scoring method (time- or catch-based) for a given subset of patterns
+	/*	Determine the more popular scoring method (time- or catch-based) for a given subset of patterns
+		Calls back on a mapping from pattern UID to a boolean indicating whether or not that pattern should be time-based */
 	getPopularScoringMethod: function(patternUIDs, cb) {
 		/*
-			THIS STILL NEEDS CONSIDERATION. How to do in batch.
-			------ Should this be based on the number of records overall in each category? Number of users? Number of PB's? ----------------- 
 
+		if patternUIDs NOT null
+			constraint = " WHERE patternUID IN (" + patternUIDs.join(',') + ")";
 
-			SELECT isTimeRecord, COUNT(*) AS count FROM (SELECT catches IS NULL AS isTimeRecord FROM records WHERE patternUID = ?) AS types GROUP BY isTimeRecord;
+		'SELECT patternUID, catches IS NULL AS isTimeRecord, COUNT(*) AS count FROM records' + constraint + ' GROUP BY patternUID, isTimeRecord;'
 
-			Use this to callback on which method has higher count of records
+		uidToMethod = {}
+	
+		for i = 0 to rows length - 1, i += 2
+			
+			if rows[i].count > rows[i + 1].count
+				uidToMethod[rows[i].patternUID] = rows[i].isTimeRecord == 1
+			else
+				uidToMethod[rows[i + 1].patternUID] = rows[i + 1].isTimeRecord == 1
+
+		callback on uidToMethod
+			
 		*/
 	}
 
