@@ -415,29 +415,64 @@ module.exports = {
 		Calls back on a mapping from pattern UID to an object of the form { timeWeight: <float>, catchWeight: <float> }
 		representing the weights for that pattern */
 	getScoringWeights: function(patternUIDs, cb) {
-		/*
+		// get all pattern UIDs in case we need them
+		con.query('SELECT uid FROM patterns;', function(err, UIDs) {
+			if (!err && UIDs !== undefined && UIDs.length > 0) {
+				var constraint = "";
 
-		if patternUIDs NOT null
-			constraint = " WHERE patternUID IN (" + patternUIDs.join(',') + ")";
+				// if subset of patterns given
+				if (patternUIDs && patternUIDs.length > 0) {
+					constraint = " WHERE patternUID IN (" + patternUIDs.join(',') + ")";
+				} else {
+					patternUIDs = [];
 
-		'SELECT patternUID, catches IS NULL AS isTimeRecord, COUNT(*) AS count FROM records' + constraint + ' GROUP BY patternUID, isTimeRecord;'
+					// add ALL pattern UIDs to list
+					for (var i = 0; i < UIDs.length; i++) {
+						patternUIDs.push(UIDs[i].uid);
+					}
+				}
 
-		uidToMethod = {}
-	
-		for i = 0 to rows length - 1, i += 2
-			total = rows[i].count + rows[i + 1].count
+				// count frequency of catches vs time in each pattern
+				con.query('SELECT patternUID, catches IS NULL AS isTimeRecord, COUNT(*) AS count FROM records' + constraint + ' GROUP BY patternUID, isTimeRecord;', function(err, rows) {
+					if (!err && rows !== undefined) {
+						var uidToWeights = {};
 
-			catch = rows[i].isTimeRecord == 1 ? rows[i + 1] : rows[i];
-			time = rows[i].isTimeRecord == 1 ? rows[i] : rows[i + 1];
+						// initialize all weights for all patterns to 0
+						for (var i = 0; i < patternUIDs.length; i++) {
+							uidToWeights[patternUIDs[i]] = {
+								catchWeight: 0,
+								timeWeight: 0
+							};
+						}
 
-			uidToMethod[rows[i].patternUID] = {
-				catchWeight: catch.count / total
-				timeWeight: time.count / total
+						// look at records in groups of two
+						for (var i = 0; i < rows.length - 1; i += 2) {
+							// get total number of PB records
+							var total = rows[i].count + rows[i + 1].count;
+
+							// get counts for catch- and time-based PB records in this pattern
+							var c = rows[i].isTimeRecord == 1 ? rows[i + 1] : rows[i];
+							var t = rows[i].isTimeRecord == 1 ? rows[i] : rows[i + 1];
+
+							// update weights to reflect frequency of scoring methods
+							uidToWeights[rows[i].patternUID] = {
+								catchWeight: c.count / total,
+								timeWeight: t.count / total
+							};
+						}
+
+						// callback on mapping
+						cb(err, uidToWeights);
+					} else {
+						// query error from counting
+						cb(err || "Unable to count catch/time frequencies for given patterns.");
+					}
+				});
+			} else {
+				// error from lack of patterns in DB
+				cb(err || "Unable to retrieve scoring weights as no patterns exist.");
 			}
-
-		callback on uidToMethod
-			
-		*/
+		});
 	}
 
 	/*
