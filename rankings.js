@@ -174,20 +174,22 @@ module.exports = {
 
 			get the max average high score for all patterns (getMaxAvgHighScores)
 
-			get the more popular scoring method for each pattern (getPopularScoringMethod)
+			get the weights for each scoring method for each pattern (getScoringWeights)
 
 			insert = []
 			query = ''
 
 			for each pattern in rows
-				if catches popular:
-					avg = avgHighScoreCatch
-					max = max for avgHighScoreCatch
-				if time popular:
-					avg = avgHighScoreTime
-					max = max for avgHighScoreTime
 
-				difficulty = numObjects * (2 - (avg / max))
+				catchWeight = frequency of catch-based scoring in this pattern
+				timeWeight = frequency of time-based scoring in this pattern
+
+				catchDiff = (avgHighScoreCatch) / (max for avgHighScoreCatch)
+				timeDiff = (avgHighScoreTime) / (max for avgHighScoreTime)
+
+				relDifficulty = (catchWeight * catchDiff) + (timeWeight * timeDiff)
+
+				difficulty = numObjects * (2 - relDifficulty)
 				
 				insert.push(uid, difficulty)
 				query += " WHEN uid = ? THEN ?"
@@ -285,9 +287,10 @@ module.exports = {
 		*/
 	},
 
-	/*	Determine the more popular scoring method (time- or catch-based) for a given subset of patterns
-		Calls back on a mapping from pattern UID to a boolean indicating whether or not that pattern should be time-based */
-	getPopularScoringMethod: function(patternUIDs, cb) {
+	/*	Determine the relative frequencies of each scoring method (catch- and time-based) for a given subset of patterns
+		Calls back on a mapping from pattern UID to an object of the form { timeWeight: <float>, catchWeight: <float> }
+		representing the weights for that pattern */
+	getScoringWeights: function(patternUIDs, cb) {
 		/*
 
 		if patternUIDs NOT null
@@ -298,11 +301,15 @@ module.exports = {
 		uidToMethod = {}
 	
 		for i = 0 to rows length - 1, i += 2
-			
-			if rows[i].count > rows[i + 1].count
-				uidToMethod[rows[i].patternUID] = rows[i].isTimeRecord == 1
-			else
-				uidToMethod[rows[i + 1].patternUID] = rows[i + 1].isTimeRecord == 1
+			total = rows[i].count + rows[i + 1].count
+
+			catch = rows[i].isTimeRecord == 1 ? rows[i + 1] : rows[i];
+			time = rows[i].isTimeRecord == 1 ? rows[i] : rows[i + 1];
+
+			uidToMethod[rows[i].patternUID] = {
+				catchWeight: catch.count / total
+				timeWeight: time.count / total
+			}
 
 		callback on uidToMethod
 			
@@ -342,28 +349,26 @@ module.exports = {
 
 		Recalc record scores in this pattern, use to update ranks in this pattern. (updateRecordScoresAndLocalRanks)
 
-		If affected Category is the more popular category for this pattern: (if it’s not nothing changes) (getPopularScoringMethod)
+		Find prevMax, the current max avg high score (all patterns) for the same category that this record is in (getMaxAvgHighScores)
 
-			Find prevMax, the current max avg high score (all patterns) for the same category that this record is in (getMaxAvgHighScores)
+		Recalculate avg high score in this pattern for this category, avg, and store in DB. (updateAvgHighScores)
 
-			Recalculate avg high score in this pattern for this category, avg, and store in DB. (updateAvgHighScores)
+		Find newMax for this category (getMaxAvgHighScores)
 
-			Find newMax for this category (getMaxAvgHighScores)
+			If max changed
 
-				If max changed
+				Recalc all pattern difficulties. (calcPatternDifficulties on all)
 
-					Recalc all pattern difficulties. (calcPatternDifficulties on all)
-
-					Recalc all user scores (calcUserScores on all)
+				Recalc all user scores (calcUserScores on all)
 
 
-				If max DID NOT change
+			If max DID NOT change
 
-					Recalc difficulty for only this pattern (calcPatternDifficulties for just this one)
+				Recalc difficulty for only this pattern (calcPatternDifficulties for just this one)
 
-					Recalc user scores for users competing in this pattern (affectedUsersByPattern, and calcUserScores for subset)
+				Recalc user scores for users competing in this pattern (affectedUsersByPattern, and calcUserScores for subset)
 
-				Recalculate global rank for everyone. (updateGlobalRanks)
+			Recalculate global rank for everyone. (updateGlobalRanks)
 
 
 	On Edit Pattern:
