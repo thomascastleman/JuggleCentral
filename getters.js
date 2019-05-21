@@ -113,7 +113,7 @@ module.exports = {
 		Splits into catch-based and time-based records, returns object with both arrays. */	
 	getRecordsByPattern: function(patternUID, cb){
 		//check for insufficient fields
-		if(patternUID != undefined){
+		if (patternUID != undefined){
 			// get all records associated with this pattern, JOINing on users table to get associated username & user rank
 			con.query('SELECT r.*, u.name AS userName, u.userRank FROM records r JOIN users u ON r.userUID = u.uid WHERE r.patternUID = ? ORDER BY r.catches, r.duration DESC;', [patternUID], function(err, rows){
 				// if there aren't any errors

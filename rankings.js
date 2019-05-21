@@ -135,8 +135,6 @@ module.exports = {
 				This gets all the relevant PB records for these patterns, grouped off by pattern, and within that,
 				ordered catch records (best to worst) come first, then ordered duration records (best to worst) (converted to seconds already)
 
-
-
 			scoreArgs = []
 			scoreQuery = ""
 
@@ -296,49 +294,108 @@ module.exports = {
 	/*	Recalculate and store the average personal best for time and catches for a given subset of patterns.
 		If no subset given, will update average PB scores for all patterns. */
 	updateAvgHighScores: function(patternUIDs, cb) {
-		/*
-			constraint = ""
+		// get all pattern UIDs in case we need to update ALL averages
+		con.query('SELECT uid FROM patterns;', function(err, UIDs) {
+			if (!err && UIDs !== undefined && UIDs.length > 0) {
+				var constraint = "";
 
-			if patternUIDs array given
-				constraint = " AND patternUID IN (" + patternUIDs.join(',') + ")";
+				// if pattern subset given, add constraint to query
+				if (patternUIDs && patternUIDs.length > 0) {
+					constraint = " AND patternUID IN (" + patternUIDs.join(',') + ")";
+				} else {
+					patternUIDs = [];
 
-			'SELECT records.*, TIME_TO_SEC(duration) AS seconds FROM records WHERE isPersonalBest = 1' + constraint + ' ORDER BY patternUID;'
+					// add all pattern UIDs to list
+					for (var i = 0; i < UIDs.length; i++) {
+						patternUIDs.push(UIDs[i].uid);
+					}
+				}
 
-			catches = [], catchQuery = ''
-			times = [], timeQuery = ''
+				// select all personal bests from these patterns, sectioned by pattern
+				con.query('SELECT records.*, TIME_TO_SEC(duration) AS seconds FROM records WHERE isPersonalBest = 1' + constraint + ' ORDER BY patternUID;', function(err, rows) {
+					if (!err && rows !== undefined) {
+						var catches = [], catchQuery = '';
+						var times = [], timeQuery = '';
 
-			for i = 0 to num records
-				j = i
+						var avgs = {};
 
-				numCatchRecords = 0, catchSum = 0
-				numTimeRecords = 0, timeSum = 0
+						// for each pattern in subset
+						for (var i = 0; i < patternUIDs.length; i++) {
+							// initialize each pattern with averages of 0
+							avgs[patternUIDs[i]] = {
+								catchAvg: 0,
+								timeAvg: 0
+							};
+						}
 
-				currentPatternUID = records[i].patternUID
+						// for each personal best
+						for (var i = 0; i < rows.length; i++) {
+							var j = i;
 
-				while records[j].patternUID = currentPatternUID
-					
-					if records[j].catches is NOT null
-						catchSum += records[j].catches
-						numCatchRecords++
+							// variables for computing average score at each pattern
+							var numCatchRecords = 0, catchSum = 0;
+							var numTimeRecords = 0, timeSum = 0;
 
-					else if records[j].time is NOT null
-						timeSum += records[j].seconds
-						numTimeRecords++
+							// get pattern UID of the record we're looking at
+							var currentPatternUID = rows[i].patternUID;
 
-					j++
+							// while looking at records under this pattern
+							while (j < rows.length && rows[j].patternUID == currentPatternUID) {
+								// if record is catch-based
+								if (rows[j].catches != null) {
+									// add to sum, increment number of catch-based records
+									catchSum += rows[j].catches;
+									numCatchRecords++;
 
-				i = j
-				catches.push(currentPatternUID, numCatchRecords > 0 ? catchSum / numCatchRecords : 0)
-				catchQuery += ' WHEN uid = ? THEN ?'
+								// if record time-based
+								} else if (rows[j].seconds != null) {
+									// add to sum, increment number of time-based records
+									timeSum += rows[j].seconds;
+									numTimeRecords++;
+								}
 
-				times.push(currentPatternUID, numTimeRecords > 0 ? timeSum / numTimeRecords : 0)
-				timeQuery += ' WHEN uid = ? THEN ?'
+								// move to next record
+								j++;
+							}
 
+							// move i to where we left off with j
+							i = j;
 
-			insert = add all of the times array to the END of the catches array
+							// update catch average for this pattern in avgs object
+							if (numCatchRecords > 0) avgs[currentPatternUID].catchAvg = catchSum / numCatchRecords;
 
-			Run this: 'UPDATE patterns SET avgHighScoreCatch = CASE' + catchQuery + ' ELSE avgHighScoreCatch END, avgHighScoreTime = CASE' + timeQuery + ' ELSE avgHighScoreTime END;'
-		*/
+							// update time average for this pattern in avgs object
+							if (numTimeRecords > 0) avgs[currentPatternUID].timeAvg = timeSum / numTimeRecords;
+						}
+
+						// add each avg to an array for update query
+						for (var i = 0; i < patternUIDs.length; i++) {
+							var p = avgs[patternUIDs[i]];
+
+							// add UIDs and averages
+							catches.push(patternUIDs[i], p.catchAvg);
+							catchQuery += ' WHEN uid = ? THEN ?';
+							times.push(patternUIDs[i], p.timeAvg);
+							timeQuery += ' WHEN uid = ? THEN ?';
+						}
+
+						// add all update parameters to one array
+						var updates = catches.concat(times);
+
+						// apply updates to averages across affected patterns
+						con.query('UPDATE patterns SET avgHighScoreCatch = CASE' + catchQuery + ' ELSE avgHighScoreCatch END, avgHighScoreTime = CASE' + timeQuery + ' ELSE avgHighScoreTime END;', updates, function(err) {
+							cb(err);
+						});
+					} else {
+						// error retrieving PB records
+						cb(err || "Unable to retrieve personal best information for the given patterns.");
+					}
+				});
+			} else {
+				// error on lack of patterns in DB
+				cb(err || "There are no patterns for which to calculate average high scores.");
+			}
+		});
 	},
 
 	// get the current max average high score values for both time and catches across all patterns
