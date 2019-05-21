@@ -10,6 +10,26 @@ var random = {
 	patterns: ["Alex","Al's Slide","Arrow of Asai","Backcrosses","Boston Mess","Cherry Picker","Boston Shuffle","Burke's Slam","Peter's Shuffle","Box","Bizarre Box","Broken Box","Burst Box","Extended Box","Gilligan's Box","Karas' Box","Luke's Shuffle","N-Box","Inverted Box","Penman's Box","Swap Box","Switched Box","Threaded Box","True Box","Underarm Box","Burke's Barrage","Takeouts","Cascade","Reverse Cascade","High-Low Var.","Chops","Reverse Chops","Columns","Box Variation","Crossunder","Infinity","Matt's Mess","Overthrow Var.","Rainbow Cross","Reverse Crossunder","Reverse Infinity","Shower Variation","Shuffle-Switch","Crossed-Arm Cascade","Reverse Variation","David's Dilemma","Fake Columns","Yo-Yo","Oy-Oy","Factory","Crossed-Arm Var.","Relf's Factory","Reverse Factory","Zebra Factory","Flying Disco Drop","Follow","Forklift","Frantic Cascade","Frostbite","Georgian Scuffle","Symmetric Var.","Georgian Shuffle","Buffalo Shuffle","Davenport Shuffle","Singapore Shuffle","Symmetric Var.","Grace","Half-Shower","Hands of Time","Harrison's Hang","Icelandic Shuffle","Inverted Shower","Jeanne","Juggler's Tennis","Kato's Crux","King of Hearts","Kingston Shuffle","Kraken","Levels","Luke's Lobotomy","Maka's Mess","Mangham's Mangle","Marden's Marvel","Mike's Mess","Mills Mess","441 Mills Mess","531 Mills Mess","Charley","Fake Mess","Flipped Mess","Flo's Mess","Half-Mess","Reverse Mills Mess","Mills Mess Shower","Nelson's Nemesis","Olas","Compressed Olas","Orka's Mess","Pendulum Drop","Penman's Pandemonium","Relf's Revenge","Relf's Revenge 6","Relf's Rubensteins","Ripley's Rainbow","Rolf's Wave","Romeo's Revenge","Rubenstein's Revenge","Sandbox Shuffle","Frances","Shower","Broken Shower","Crossed-Arm Shower","High-Low Var.","Reverse Crossed-Arm Shower","Swap Variation","Underarm Var.","Shower Cascade","Shuffle","Low Shuffle","Shuffler's Mess","Snake","Statue of Liberty","Takearound","Three In One","Tom's Trick","Triazzle","Truffle Shuffle","Weave","Orinoco Flow","Windmill","Chop Shower","423","The W","441 (Half-Box)","Reverse 441","531"]
 };
 
+function removeDup(a) {
+	var m = {};
+	for (var i = 0; i < a.length; i++) {
+		m[a[i]] = 1;
+	}
+
+	a = [];
+
+	for (var k in m) {
+		if (m.hasOwnProperty(k)) {
+			a.push(k);
+		}
+	}
+}
+
+removeDup(random.names);
+removeDup(random.emails);
+removeDup(random.patterns);
+
+
 var NUM_USERS = 35;
 var NUM_ADMINS = 5;
 var NUM_PATTERNS = 30;

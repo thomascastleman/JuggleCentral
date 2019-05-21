@@ -90,23 +90,6 @@ module.exports = {
 
 	// convert existing user scores into user ranks for all users
 	updateGlobalRanks: function(cb) {
-		/*
-			SELECT score FROM users GROUP BY score ORDER BY score DESC;
-
-				This gets all the possible scores (no duplicates) from the users table, ordered highest to lowest. We simply need to rank them and 
-				then UPDATE to add that same rank to any users who share that score.
-
-			insert = []
-			query = ''
-
-			for i = 0 to rows.length
-				insert.push(rows[i].score, i + 1)
-				query += ' WHEN score = ? THEN ?'
-
-			if non-empty query, run 'UPDATE users SET userRank = CASE' + query + ' ELSE userRank END;'
-
-		*/
-
 		/*	This gets all the possible scores (no duplicates) from the users table, ordered highest to lowest. We simply need to rank them and 
 			then UPDATE to add that same rank to any users who share that score. */
 		con.query('SELECT score FROM users GROUP BY score ORDER BY score DESC;', function(err, rows) {
@@ -152,6 +135,14 @@ module.exports = {
 				This gets all the relevant PB records for these patterns, grouped off by pattern, and within that,
 				ordered catch records (best to worst) come first, then ordered duration records (best to worst) (converted to seconds already)
 
+
+
+			scoreArgs = []
+			scoreQuery = ""
+
+			rankArgs = []
+			rankQuery = ""
+
 			for i from 0 to records.length
 				j = i
 				rank = 1
@@ -160,10 +151,16 @@ module.exports = {
 					while records[j].catches also NOT null:
 						records[j].score = records[j].catches / records[i].catches
 
+						add (records[j].uid, records[j].score) to scoreArgs
+						add " WHEN uid = ? THEN ?" to scoreQuery
+
 						if i != j & records[j].score < records[j - 1].score
 							rank++
 						
 						records[j].rank = rank
+
+						add (records[j].uid, records[j].rank) to rankArgs
+						add " WHEN uid = ? THEN ?" to rankQuery
 
 						j++
 
@@ -174,15 +171,26 @@ module.exports = {
 					while records[j].seconds also NOT null:
 						records[j].score = records[j].seconds / records[i].seconds
 
+						add (records[j].uid, records[j].score) to scoreArgs
+						add " WHEN uid = ? THEN ?" to scoreQuery
+
 						if i != j & records[j].score < records[j - 1].score
 							rank++
 						
 						records[j].rank = rank
 
+						add (records[j].uid, records[j].rank) to rankArgs
+						add " WHEN uid = ? THEN ?" to rankQuery
+
 						j++
 
 				i = j
 
+			
+			full = 'UPDATE records SET score = CASE' + scoreQuery + ' ELSE score END, recordRank = CASE' + rankQuery + ' ELSE recordRank;'
+
+			run full query with all of rankArgs added onto the end of scoreArgs as params
+			cb(err)
 
 
 		*/
@@ -444,16 +452,14 @@ module.exports = {
 
 }
 
-/* randomize user scores */
+// /* randomize user scores */
 // var query = "";
 // var update = [];
 
 // for (var i = 1; i < 42; i++) {
 // 	query += " WHEN uid = ? THEN ?";
-// 	update.push(i, Math.random() * 100);
+// 	update.push(i, Math.floor(Math.random() * 10));
 // }
-
-// console.log(query);
 
 // con.query('UPDATE users SET score = CASE' + query + ' ELSE score END;', update, function(err) {
 // 	console.log(err);
