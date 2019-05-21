@@ -202,32 +202,61 @@ module.exports = {
 
 	// determine the UIDs of all patterns affected by a subset of users (which patterns do they have records in)
 	affectedPatternsByUser: function(userUIDs, cb) {
-		/*
-			setOfUsers = userUIDs.join(',');
+		// default to no affected patterns if no subset given
+		if (!userUIDs || userUIDs.length == 0) {
+			cb(null, []);
+		} else {
 
-			'SELECT patternUID FROM records WHERE userUID IN (' + setOfUsers + ') GROUP BY patternUID;'
+			// join user UIDs into comma-separated string
+			var setOfUsers = userUIDs.join(',');
 
-			patterns = []
+			// get patternUID of all the records owned by these users, grouped so each pattern only appears once
+			con.query('SELECT patternUID FROM records WHERE userUID IN (' + setOfUsers + ') GROUP BY patternUID;', function(err, rows) {
+				if (!err && rows !== undefined) {
+					var patterns = [];
 
-			for each row
-				add patternUID to patterns
+					// transfer row objects into a list of UIDs
+					for (var i = 0; i < rows.length; i++) {
+						patterns.push(rows[i].patternUID);
+					}
 
-			callback on patterns
-		*/
+					// callback on list of pattern UIDs
+					cb(err, patterns);
+				} else {
+					// callback on query error
+					cb(err || "Unable to determine the patterns affected by the given set of users.");
+				}
+			});
+		}
 	},
 
 	// determine the UIDs of users who compete in a given pattern
-	affectedUsersByPattern: function(patternUID, cb) {
-		/*
-			SELECT userUID FROM records WHERE patternUID = ? GROUP BY userUID;
+	affectedUsersByPattern: function(patternUIDs, cb) {
+		// default to no affected users if no subset given
+		if (!patternUIDs || patternUIDs.length == 0) {
+			cb(null, []);
+		} else {
+			// join pattern UIDs into comma-separated string
+			var setOfPatterns = patternUIDs.join(',');
 
-			users = []
+			// get userUID of all records referencing these patterns, grouped so each user only appears once
+			con.query('SELECT userUID FROM records WHERE patternUID IN (' + setOfPatterns + ') GROUP BY userUID;', function(err, rows) {
+				if (!err && rows !== undefined) {
+					var users = [];
 
-			for each row
-				add userUID to users
+					// transfer row objects into a list of UIDs
+					for (var i = 0; i < rows.length; i++) {
+						users.push(rows[i].userUID);
+					}
 
-			callback on users
-		*/
+					// callback on list of user UIDs
+					cb(err, users);
+				} else {
+					// callback on query error
+					cb(err || "Unable to determine the users affected by the given set of patterns.");
+				}
+			});
+		}
 	},
 
 	/*	Recalculate and store the average personal best for time and catches for a given subset of patterns.
@@ -336,7 +365,7 @@ module.exports = {
 
 		If not:
 			Recalc difficulties for all affected patterns. (calcPatternDifficulties with subset)
-			Recalc user scores of those who competed in affected patterns. (affectedPatternsByUser with subset, calcUserScores with subset)
+			Recalc user scores of those who competed in affected patterns. (affectedUsersByPattern with subset of patterns this user affected, calcUserScores with subset)
 
 		Recalc rank for everyone. (updateGlobalRanks)
 
@@ -384,21 +413,3 @@ module.exports = {
 	*/
 
 }
-
-// // convert a duration string into an integer number of seconds, for easy comparison
-// function toSec(duration) {
-// 	// split duration string into components
-// 	var spl = duration.split(':');
-
-// 	if (spl.length > 2) {
-// 		// parse hours, minutes, seconds
-// 		var hr = parseInt(spl[0]);
-// 		var min = parseInt(spl[1]);
-// 		var sec = parseInt(spl[2]);
-
-// 		// convert to seconds
-// 		return (hr * 3600) + (min * 60) + sec;
-// 	} else {
-// 		return null;
-// 	}
-// }
