@@ -90,7 +90,22 @@ module.exports = {
 
 	// convert existing user scores into user ranks for all users
 	updateGlobalRanks: function(cb) {
+		/*
+			SELECT score FROM users GROUP BY score ORDER BY score DESC;
 
+				This gets all the possible scores (no duplicates) from the users table, ordered highest to lowest. We simply need to rank them and 
+				then UPDATE to add that same rank to any users who share that score.
+
+			insert = []
+			query = ''
+
+			for i = 0 to rows.length
+				insert.push(rows[i].score, i + 1)
+				query += ' WHEN score = ? THEN ?'
+
+			if non-empty query, run 'UPDATE users SET userRank = CASE' + query + ' ELSE userRank END;'
+
+		*/
 	},
 
 	/*	Calculate the record scores for all PB records within a given subset of patterns,
