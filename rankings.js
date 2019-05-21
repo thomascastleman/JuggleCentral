@@ -162,24 +162,89 @@ module.exports = {
 		*/
 	},
 
-	// calculate the difficulties of a subset of patterns
+	/*	Calculate the difficulties of a subset of patterns, assuming the 
+		number of objects and average high scores have been updated already. 
+		If no subset given, calculate for all patterns. */
 	calcPatternDifficulties: function(patternUIDs, cb) {
+		/*
+			if pattern UID subset given:
+				constraint = " WHERE uid IN (" + patternUIDs.join(',') + ")";
 
+			SELECT uid, numObjects, avgHighScoreCatch, avgHighScoreTime FROM patterns' + constraint + ';'
+				This gets what we need from each pattern in subset, or in all patterns.
+
+			get the max average high score for all patterns (getMaxAvgHighScores)
+
+			get the more popular scoring method for each pattern (getPopularScoringMethod)
+
+			insert = []
+			query = ''
+
+			for each pattern in rows
+				if catches popular:
+					avg = avgHighScoreCatch
+					max = max for avgHighScoreCatch
+				if time popular:
+					avg = avgHighScoreTime
+					max = max for avgHighScoreTime
+
+				difficulty = numObjects * (2 - (avg / max))
+				
+				insert.push(uid, difficulty)
+				query += " WHEN uid = ? THEN ?"
+
+
+			Run: 'UPDATE patterns SET difficulty = CASE' + ';'
+
+		*/
 	},
 
 	// determine the UIDs of all patterns affected by a subset of users (which patterns do they have records in)
 	affectedPatternsByUser: function(userUIDs, cb) {
+		/*
+			setOfUsers = userUIDs.join(',');
 
+			'SELECT patternUID FROM records WHERE userUID IN (' + setOfUsers + ') GROUP BY patternUID;'
+
+			patterns = []
+
+			for each row
+				add patternUID to patterns
+
+			callback on patterns
+		*/
 	},
 
 	// determine the UIDs of users who compete in a given pattern
 	affectedUsersByPattern: function(patternUID, cb) {
+		/*
+			SELECT userUID FROM records WHERE patternUID = ? GROUP BY userUID;
 
+			users = []
+
+			for each row
+				add userUID to users
+
+			callback on users
+		*/
 	},
 
 	// recalculate and store the average high score for time and catches for a given subset of patterns
 	updateAvgHighScores: function(patternUIDs, cb) {
+		/*
 
+			NEEDS PSEUDO still I didn't actually write anything
+
+			------ This may be useful: -------
+
+			constraint = ""
+
+			if patternUIDs array given
+				constraint = " AND r.patternUID IN (" + patternUIDs.join(',') + ")";
+
+
+			SELECT r.*, p.uid FROM records r LEFT JOIN patterns p ON r.patternUID = p.uid WHERE r.isPersonalBest = 1' + constraint + ' ORDER BY r.patternUID;'
+		*/
 	},
 
 	// get the current max average high score values for both time and catches across all patterns
@@ -191,9 +256,13 @@ module.exports = {
 		*/
 	},
 
-	// determine the more popular scoring method (time- or catch-based) for a given pattern
-	determinePopularScoringMethod: function(patternUID, cb) {
+	// determine the more popular scoring method (time- or catch-based) for a given subset of patterns
+	getPopularScoringMethod: function(patternUIDs, cb) {
 		/*
+			THIS STILL NEEDS CONSIDERATION. How to do in batch.
+			------ Should this be based on the number of records overall in each category? Number of users? Number of PB's? ----------------- 
+
+
 			SELECT isTimeRecord, COUNT(*) AS count FROM (SELECT catches IS NULL AS isTimeRecord FROM records WHERE patternUID = ?) AS types GROUP BY isTimeRecord;
 
 			Use this to callback on which method has higher count of records
@@ -233,7 +302,7 @@ module.exports = {
 
 		Recalc record scores in this pattern, use to update ranks in this pattern. (updateRecordScoresAndLocalRanks)
 
-		If affected Category is the more popular category for this pattern: (if it’s not nothing changes) (determinePopularScoringMethod)
+		If affected Category is the more popular category for this pattern: (if it’s not nothing changes) (getPopularScoringMethod)
 
 			Find prevMax, the current max avg high score (all patterns) for the same category that this record is in (getMaxAvgHighScores)
 
