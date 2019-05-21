@@ -206,7 +206,6 @@ module.exports = {
 		if (!userUIDs || userUIDs.length == 0) {
 			cb(null, []);
 		} else {
-
 			// join user UIDs into comma-separated string
 			var setOfUsers = userUIDs.join(',');
 
@@ -309,11 +308,15 @@ module.exports = {
 
 	// get the current max average high score values for both time and catches across all patterns
 	getMaxAvgHighScores: function(cb) {
-		/*
-			Use a con.query to SELECT the MAX() of the avgHighScoreCatch and avgHighScoreTime columns from the patterns table.
-			Callback on any errors, and both values
-			cb(err, maxAvgCatch, maxAvgTime)
-		*/
+		// use SQL to get the max averages
+		con.query('SELECT MAX(avgHighScoreCatch) AS maxAvgCatch, MAX(avgHighScoreTime) AS maxAvgTime FROM patterns;', function(err, rows) {
+			if (!err && rows !== undefined && rows.length > 0) {
+				// callback on both values
+				cb(err, rows[0].maxAvgCatch, rows[0].maxAvgTime);
+			} else {
+				cb(err || "Unable to retrieve maximum average personal best values from patterns.");
+			}
+		});
 	},
 
 	/*	Determine the relative frequencies of each scoring method (catch- and time-based) for a given subset of patterns
