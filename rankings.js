@@ -106,6 +106,33 @@ module.exports = {
 			if non-empty query, run 'UPDATE users SET userRank = CASE' + query + ' ELSE userRank END;'
 
 		*/
+
+		/*	This gets all the possible scores (no duplicates) from the users table, ordered highest to lowest. We simply need to rank them and 
+			then UPDATE to add that same rank to any users who share that score. */
+		con.query('SELECT score FROM users GROUP BY score ORDER BY score DESC;', function(err, rows) {
+			if (!err && rows !== undefined) {
+				var args = [];
+				var query = '';
+
+				// give each score a rank
+				for (var i = 0; i < rows.length; i++) {
+					args.push(rows[i].score, i + 1);
+					query += ' WHEN score = ? THEN ?';
+				}
+
+				// if there is something to update
+				if (query != '') {
+					// update the user ranks accordingly, giving each user the rank that corresponds with their score
+					con.query('UPDATE users SET userRank = CASE' + query + ' ELSE userRank END;', args, function(err) {
+						cb(err);
+					});
+				} else {
+					cb(err);
+				}
+			} else {
+				cb(err || "Unable to determine all possible user scores.");
+			}
+		});
 	},
 
 	/*	Calculate the record scores for all PB records within a given subset of patterns,
@@ -416,3 +443,18 @@ module.exports = {
 	*/
 
 }
+
+/* randomize user scores */
+// var query = "";
+// var update = [];
+
+// for (var i = 1; i < 42; i++) {
+// 	query += " WHEN uid = ? THEN ?";
+// 	update.push(i, Math.random() * 100);
+// }
+
+// console.log(query);
+
+// con.query('UPDATE users SET score = CASE' + query + ' ELSE score END;', update, function(err) {
+// 	console.log(err);
+// });
