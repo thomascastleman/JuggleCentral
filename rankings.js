@@ -120,12 +120,11 @@ module.exports = {
 		}
 
 		/*
-			'SELECT * FROM records WHERE isPersonalBest = 1' + constraint + ' ORDER BY patternUID, catches DESC, duration DESC;'
-				
-				This gets all the relevant PB records for these patterns, grouped off by pattern, and within that,
-				ordered catch records (best to worst) come first, then ordered duration records (best to worst)
 
-			
+			'SELECT records.*, TIME_TO_SEC(duration) AS seconds FROM records WHERE isPersonalBest = 1' + constraint + ' ORDER BY patternUID, catches DESC, seconds DESC;''
+				This gets all the relevant PB records for these patterns, grouped off by pattern, and within that,
+				ordered catch records (best to worst) come first, then ordered duration records (best to worst) (converted to seconds already)
+
 			for i from 0 to records.length
 				j = i
 				rank = 1
@@ -144,9 +143,9 @@ module.exports = {
 				i = j
 				rank = 1
 
-				if records[i].duration NOT null
-					while records[j].duration also NOT null:
-						records[j].score = toSec(records[j].duration) / toSec(records[i].duration)
+				if records[i].seconds NOT null
+					while records[j].seconds also NOT null:
+						records[j].score = records[j].seconds / records[i].seconds
 
 						if i != j & records[j].score < records[j - 1].score
 							rank++
@@ -238,7 +237,7 @@ module.exports = {
 			if patternUIDs array given
 				constraint = " AND patternUID IN (" + patternUIDs.join(',') + ")";
 
-			SELECT * FROM records WHERE isPersonalBest = 1' + constraint + ' ORDER BY patternUID;'
+			'SELECT records.*, TIME_TO_SEC(duration) AS seconds FROM records WHERE isPersonalBest = 1' + constraint + ' ORDER BY patternUID;'
 
 			catches = [], catchQuery = ''
 			times = [], timeQuery = ''
@@ -258,7 +257,7 @@ module.exports = {
 						numCatchRecords++
 
 					else if records[j].time is NOT null
-						timeSum += toSec(records[j].duration)
+						timeSum += records[j].seconds
 						numTimeRecords++
 
 					j++
@@ -381,20 +380,20 @@ module.exports = {
 
 }
 
-// convert a duration string into an integer number of seconds, for easy comparison
-function toSec(duration) {
-	// split duration string into components
-	var spl = duration.split(':');
+// // convert a duration string into an integer number of seconds, for easy comparison
+// function toSec(duration) {
+// 	// split duration string into components
+// 	var spl = duration.split(':');
 
-	if (spl.length > 2) {
-		// parse hours, minutes, seconds
-		var hr = parseInt(spl[0]);
-		var min = parseInt(spl[1]);
-		var sec = parseInt(spl[2]);
+// 	if (spl.length > 2) {
+// 		// parse hours, minutes, seconds
+// 		var hr = parseInt(spl[0]);
+// 		var min = parseInt(spl[1]);
+// 		var sec = parseInt(spl[2]);
 
-		// convert to seconds
-		return (hr * 3600) + (min * 60) + sec;
-	} else {
-		return null;
-	}
-}
+// 		// convert to seconds
+// 		return (hr * 3600) + (min * 60) + sec;
+// 	} else {
+// 		return null;
+// 	}
+// }
