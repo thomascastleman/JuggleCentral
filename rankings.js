@@ -221,6 +221,9 @@ module.exports = {
 								for (var i = 0; i < rows.length; i++) {
 									// get associated weights
 									var w = idToWeights[rows[i].uid];
+
+									// default to empty weights if no records exist for that pattern
+									if (!w) w = { catchWeight: 0, timeWeight: 0 };
 									
 									// determine relative difficulty of pattern for each scoring method
 									var catchDifficulty = maxAvgCatch > 0 ? rows[i].avgHighScoreCatch / maxAvgCatch : 0;
@@ -421,64 +424,42 @@ module.exports = {
 		Calls back on a mapping from pattern UID to an object of the form { timeWeight: <float>, catchWeight: <float> }
 		representing the weights for that pattern */
 	getScoringWeights: function(patternUIDs, cb) {
-		// get all pattern UIDs in case we need them
-		con.query('SELECT uid FROM patterns;', function(err, UIDs) {
-			if (!err && UIDs !== undefined && UIDs.length > 0) {
-				var constraint = "";
+		var constraint = "";
 
-				// if subset of patterns given
-				if (patternUIDs && patternUIDs.length > 0) {
-					constraint = " WHERE patternUID IN (" + patternUIDs.join(',') + ")";
-				} else {
-					patternUIDs = [];
+		// if subset of patterns given
+		if (patternUIDs && patternUIDs.length > 0) {
+			constraint = " WHERE patternUID IN (" + patternUIDs.join(',') + ")";
+		}
 
-					// add ALL pattern UIDs to list
-					for (var i = 0; i < UIDs.length; i++) {
-						patternUIDs.push(UIDs[i].uid);
-					}
+		// count frequency of catches vs time in each pattern
+		con.query('SELECT patternUID, catches IS NULL AS isTimeRecord, COUNT(*) AS count FROM records' + constraint + ' GROUP BY patternUID, isTimeRecord;', function(err, rows) {
+			if (!err && rows !== undefined) {
+				var uidToWeights = {};
+
+				// look at records in groups of two
+				for (var i = 0; i < rows.length - 1; i += 2) {
+					// get total number of PB records
+					var total = rows[i].count + rows[i + 1].count;
+
+					// get counts for catch- and time-based PB records in this pattern
+					var c = rows[i].isTimeRecord == 1 ? rows[i + 1] : rows[i];
+					var t = rows[i].isTimeRecord == 1 ? rows[i] : rows[i + 1];
+
+					// update weights to reflect frequency of scoring methods
+					uidToWeights[rows[i].patternUID] = {
+						catchWeight: c.count / total,
+						timeWeight: t.count / total
+					};
 				}
 
-				// count frequency of catches vs time in each pattern
-				con.query('SELECT patternUID, catches IS NULL AS isTimeRecord, COUNT(*) AS count FROM records' + constraint + ' GROUP BY patternUID, isTimeRecord;', function(err, rows) {
-					if (!err && rows !== undefined) {
-						var uidToWeights = {};
-
-						// initialize all weights for all patterns to 0
-						for (var i = 0; i < patternUIDs.length; i++) {
-							uidToWeights[patternUIDs[i]] = {
-								catchWeight: 0,
-								timeWeight: 0
-							};
-						}
-
-						// look at records in groups of two
-						for (var i = 0; i < rows.length - 1; i += 2) {
-							// get total number of PB records
-							var total = rows[i].count + rows[i + 1].count;
-
-							// get counts for catch- and time-based PB records in this pattern
-							var c = rows[i].isTimeRecord == 1 ? rows[i + 1] : rows[i];
-							var t = rows[i].isTimeRecord == 1 ? rows[i] : rows[i + 1];
-
-							// update weights to reflect frequency of scoring methods
-							uidToWeights[rows[i].patternUID] = {
-								catchWeight: c.count / total,
-								timeWeight: t.count / total
-							};
-						}
-
-						// callback on mapping
-						cb(err, uidToWeights);
-					} else {
-						// query error from counting
-						cb(err || "Unable to count catch/time frequencies for given patterns.");
-					}
-				});
+				// callback on mapping
+				cb(err, uidToWeights);
 			} else {
-				// error from lack of patterns in DB
-				cb(err || "Unable to retrieve scoring weights as no patterns exist.");
+				// query error from counting
+				cb(err || "Unable to count catch/time frequencies for given patterns.");
 			}
 		});
+
 	}
 
 	/*
@@ -568,9 +549,14 @@ module.exports = {
 
 
 
-// module.exports.updateAvgHighScores([], function(err) {
+module.exports.updateAvgHighScores([], function(err) {
+	console.log(err);
+	module.exports.calcPatternDifficulties([], function(err) {
+		console.log(err);
+	});
+});
+
+// module.exports.getScoringWeights([], function(err, m) {
 // 	console.log(err);
-// 	module.exports.calcPatternDifficulties(null, function(err) {
-// 		console.log(err);
-// 	});
-// })
+// 	console.log(m);
+// });
