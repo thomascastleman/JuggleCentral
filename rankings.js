@@ -198,39 +198,65 @@ module.exports = {
 		number of objects and average high scores have been updated already. 
 		If no subset given, calculate for all patterns. */
 	calcPatternDifficulties: function(patternUIDs, cb) {
-		/*
-			if pattern UID subset given:
-				constraint = " WHERE uid IN (" + patternUIDs.join(',') + ")";
+		var constraint = "";
 
-			SELECT uid, numObjects, avgHighScoreCatch, avgHighScoreTime FROM patterns' + constraint + ';'
-				This gets what we need from each pattern in subset, or in all patterns.
+		// if pattern subset specified, add query constraint to just those UIDs
+		if (patternUIDs && patternUIDs.length > 0) {
+			constraint = " WHERE uid IN (" + patternUIDs.join(',') + ")";
+		}
 
-			get the max average high score for all patterns (getMaxAvgHighScores)
+		// get necessary pattern info for calculating difficulty
+		con.query('SELECT uid, numObjects, avgHighScoreCatch, avgHighScoreTime FROM patterns' + constraint + ';', function(err, rows) {
+			if (!err && rows !== undefined) {
+				// get the current max average high scores across ALL patterns
+				module.exports.getMaxAvgHighScores(function(err, maxAvgCatch, maxAvgTime) {
+					if (!err) {
+						// get the scoring weights for each pattern in subset
+						module.exports.getScoringWeights(patternUIDs, function(err, idToWeights) {
+							if (!err) {
+								var update = [];
+								var query = '';
 
-			get the weights for each scoring method for each pattern (getScoringWeights)
+								// for each pattern
+								for (var i = 0; i < rows.length; i++) {
+									// get associated weights
+									var w = idToWeights[rows[i].uid];
+									
+									// determine relative difficulty of pattern for each scoring method
+									var catchDifficulty = maxAvgCatch > 0 ? rows[i].avgHighScoreCatch / maxAvgCatch : 0;
+									var timeDifficulty = maxAvgTime > 0 ? rows[i].avgHighScoreTime / maxAvgTime : 0;
 
-			insert = []
-			query = ''
+									// compute weighted average of two relative difficulties to get overall relative difficulty
+									var relDifficulty = (w.catchWeight * catchDifficulty) + (w.timeWeight * timeDifficulty);
 
-			for each pattern in rows
+									// compute actual difficulty as number of objects scaled up by relative difficulty (only if rel. difficulty non-zero)
+									var difficulty = rows[i].numObjects;
+									if (relDifficulty > 0) difficulty *= (2 - relDifficulty);
 
-				catchWeight = frequency of catch-based scoring in this pattern
-				timeWeight = frequency of time-based scoring in this pattern
+									// add UID and difficulty to update params, extend update query
+									update.push(rows[i].uid, difficulty);
+									query += " WHEN uid = ? THEN ?";
+								}
 
-				catchDiff = (avgHighScoreCatch) / (max for avgHighScoreCatch)
-				timeDiff = (avgHighScoreTime) / (max for avgHighScoreTime)
-
-				relDifficulty = (catchWeight * catchDiff) + (timeWeight * timeDiff)
-
-				difficulty = numObjects * (2 - relDifficulty)
-				
-				insert.push(uid, difficulty)
-				query += " WHEN uid = ? THEN ?"
-
-
-			Run: 'UPDATE patterns SET difficulty = CASE' + ';'
-
-		*/
+								// update pattern difficulties accordingly
+								con.query('UPDATE patterns SET difficulty = CASE' + query + ' ELSE difficulty END;', update, function(err) {
+									cb(err);
+								});
+							} else {
+								// error getting weights for scoring methods
+								cb(err);
+							}
+						});
+					} else {
+						// error determining max averages
+						cb(err);
+					}
+				});
+			} else {
+				// error retrieving pattern data
+				cb(err || "Unable to retrieve pattern metadata to calculate difficulties.");
+			}
+		});
 	},
 
 	// determine the UIDs of all patterns affected by a subset of users (which patterns do they have records in)
@@ -536,3 +562,15 @@ module.exports = {
 // con.query('UPDATE users SET score = CASE' + query + ' ELSE score END;', update, function(err) {
 // 	console.log(err);
 // });
+
+
+
+
+
+
+// module.exports.updateAvgHighScores([], function(err) {
+// 	console.log(err);
+// 	module.exports.calcPatternDifficulties(null, function(err) {
+// 		console.log(err);
+// 	});
+// })
