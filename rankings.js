@@ -294,39 +294,22 @@ module.exports = {
 	/*	Recalculate and store the average personal best for time and catches for a given subset of patterns.
 		If no subset given, will update average PB scores for all patterns. */
 	updateAvgHighScores: function(patternUIDs, cb) {
-		// get all pattern UIDs in case we need to update ALL averages
-		con.query('SELECT uid FROM patterns;', function(err, UIDs) {
-			if (!err && UIDs !== undefined && UIDs.length > 0) {
-				var constraint = "";
+		var constraintA = "", constraintB = "";
 
-				// if pattern subset given, add constraint to query
-				if (patternUIDs && patternUIDs.length > 0) {
-					constraint = " AND patternUID IN (" + patternUIDs.join(',') + ")";
-				} else {
-					patternUIDs = [];
+		// if pattern subset given, add constraints to queries
+		if (patternUIDs && patternUIDs.length > 0) {
+			constraintA = " WHERE uid IN (" + patternUIDs.join(',') + ")";
+			constraintB = " AND patternUID IN (" + patternUIDs.join(',') + ")";
+		}
 
-					// add all pattern UIDs to list
-					for (var i = 0; i < UIDs.length; i++) {
-						patternUIDs.push(UIDs[i].uid);
-					}
-				}
-
+		// reset all affected pattern averages to 0, so that even patterns which have no records are still updated
+		con.query('UPDATE patterns SET avgHighScoreCatch = 0, avgHighScoreTime = 0' + constraintA + ';', function(err) {
+			if (!err) {
 				// select all personal bests from these patterns, sectioned by pattern
-				con.query('SELECT records.*, TIME_TO_SEC(duration) AS seconds FROM records WHERE isPersonalBest = 1' + constraint + ' ORDER BY patternUID;', function(err, rows) {
+				con.query('SELECT records.*, TIME_TO_SEC(duration) AS seconds FROM records WHERE isPersonalBest = 1' + constraintB + ' ORDER BY patternUID;', function(err, rows) {
 					if (!err && rows !== undefined) {
 						var catches = [], catchQuery = '';
 						var times = [], timeQuery = '';
-
-						var avgs = {};
-
-						// for each pattern in subset
-						for (var i = 0; i < patternUIDs.length; i++) {
-							// initialize each pattern with averages of 0
-							avgs[patternUIDs[i]] = {
-								catchAvg: 0,
-								timeAvg: 0
-							};
-						}
 
 						// for each personal best
 						for (var i = 0; i < rows.length; i++) {
@@ -361,39 +344,36 @@ module.exports = {
 							// move i to where we left off with j
 							i = j;
 
-							// update catch average for this pattern in avgs object
-							if (numCatchRecords > 0) avgs[currentPatternUID].catchAvg = catchSum / numCatchRecords;
-
-							// update time average for this pattern in avgs object
-							if (numTimeRecords > 0) avgs[currentPatternUID].timeAvg = timeSum / numTimeRecords;
-						}
-
-						// add each avg to an array for update query
-						for (var i = 0; i < patternUIDs.length; i++) {
-							var p = avgs[patternUIDs[i]];
-
-							// add UIDs and averages
-							catches.push(patternUIDs[i], p.catchAvg);
+							// update catch average for this pattern, add to update params
+							catches.push(currentPatternUID, numCatchRecords > 0 ? catchSum / numCatchRecords : 0);
 							catchQuery += ' WHEN uid = ? THEN ?';
-							times.push(patternUIDs[i], p.timeAvg);
+
+							// update time average for this pattern, add to update params
+							times.push(currentPatternUID, numTimeRecords > 0 ? timeSum / numTimeRecords : 0);
 							timeQuery += ' WHEN uid = ? THEN ?';
 						}
 
 						// add all update parameters to one array
 						var updates = catches.concat(times);
 
-						// apply updates to averages across affected patterns
-						con.query('UPDATE patterns SET avgHighScoreCatch = CASE' + catchQuery + ' ELSE avgHighScoreCatch END, avgHighScoreTime = CASE' + timeQuery + ' ELSE avgHighScoreTime END;', updates, function(err) {
+						// if there are new values to update to
+						if (updates.length > 0) {
+							// apply updates to averages across affected patterns
+							con.query('UPDATE patterns SET avgHighScoreCatch = CASE' + catchQuery + ' ELSE avgHighScoreCatch END, avgHighScoreTime = CASE' + timeQuery + ' ELSE avgHighScoreTime END;', updates, function(err) {
+								cb(err);
+							});
+						} else {
+							// callback without updating anything since no updates needed
 							cb(err);
-						});
+						}
 					} else {
 						// error retrieving PB records
 						cb(err || "Unable to retrieve personal best information for the given patterns.");
 					}
 				});
 			} else {
-				// error on lack of patterns in DB
-				cb(err || "There are no patterns for which to calculate average high scores.");
+				// error on failure to reset before updating
+				cb(err || "Failed to reset pattern averages to 0.");
 			}
 		});
 	},
