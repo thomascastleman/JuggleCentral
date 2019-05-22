@@ -422,7 +422,8 @@ module.exports = {
 
 	/*	Determine the relative frequencies of each scoring method (catch- and time-based) for a given subset of patterns
 		Calls back on a mapping from pattern UID to an object of the form { timeWeight: <float>, catchWeight: <float> }
-		representing the weights for that pattern */
+		representing the weights for that pattern.
+		If a pattern UID maps to null, assume to use weights of 0 for that pattern. */
 	getScoringWeights: function(patternUIDs, cb) {
 		var constraint = "";
 
@@ -459,8 +460,53 @@ module.exports = {
 				cb(err || "Unable to count catch/time frequencies for given patterns.");
 			}
 		});
+	},
 
+	/*	Redetermine the isPersonalBest flag for a given user competing in a given event
+		If scoringIsTime, the affected category is time-based scoring, otherwise catch-based */
+	maintainPB: function(userUID, patternUID, cb) {
+		// ensure valid user and pattern given
+		if (userUID && userUID > 0 && patternUID && patternUID > 0) {
+			// default all records under this user & pattern to NOT the PB
+			con.query('UPDATE records SET isPersonalBest = 0 WHERE userUID = ? AND patternUID = ?;', [userUID, patternUID], function(err) {
+				if (!err) {
+					// get the personal best records in each scoring method for this user & pattern
+					con.query('SELECT * FROM records JOIN (SELECT duration IS NOT NULL AS isTimeBased, catches IS NOT NULL AS isCatchBased, MAX(duration) AS maxDuration, MAX(catches) AS maxCatches FROM records WHERE userUID = ? AND patternUID = ? GROUP BY isTimeBased, isCatchBased) AS x ON (records.duration = x.maxDuration OR records.catches = x.maxCatches) WHERE userUID = ? AND patternUID = ?;', [userUID, patternUID, userUID, patternUID], function(err, rows) {
+						if (!err && rows !== undefined) {
+							// if there are personal bests to flag
+							if (rows.length > 0) {
+								var uids = [];
+
+								// add record UIDs (however many) to list of UIDs for UPDATE query
+								for (var i = 0; i < rows.length; i++) {
+									uids.push(rows[i].uid);
+								}
+
+								// convert UID array into comma-separated string
+								var constraint = uids.join(',');
+
+								// update the new personal bests accordingly
+								con.query('UPDATE records SET isPersonalBest = 1 WHERE uid IN (' + constraint + ');', function(err) {
+									cb(err);
+								});
+							} else {
+								cb(err);
+							}
+						} else {
+							cb(err || "Failed to determine the current personal bests for the given user and pattern.");
+						}
+					});
+				} else {
+					// failed to reset personal best statuses to 0
+					cb(err);
+				}
+			});
+		} else {
+			// error lack of requirements
+			cb("Unable to maintain the personal best record due to invalid user or pattern given.");
+		}
 	}
+
 
 	/*
 
@@ -491,7 +537,7 @@ module.exports = {
 
 
 	On Delete / New Record:
-		Determine category (time or catches) of this record.
+		Maintain personal best for this category in this pattern for this user.
 
 		Recalc record scores in this pattern, use to update ranks in this pattern. (updateRecordScoresAndLocalRanks)
 
@@ -542,21 +588,4 @@ module.exports = {
 
 // con.query('UPDATE users SET score = CASE' + query + ' ELSE score END;', update, function(err) {
 // 	console.log(err);
-// });
-
-
-
-
-
-
-module.exports.updateAvgHighScores([], function(err) {
-	console.log(err);
-	module.exports.calcPatternDifficulties([], function(err) {
-		console.log(err);
-	});
-});
-
-// module.exports.getScoringWeights([], function(err, m) {
-// 	console.log(err);
-// 	console.log(m);
 // });

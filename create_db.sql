@@ -42,12 +42,12 @@ CREATE TABLE records (
 	uid INT NOT NULL AUTO_INCREMENT,
 	userUID INT,
 	patternUID INT,
-	isPersonalBest TINYINT(1),		-- is this record the user's personal best for this pattern?
-	score FLOAT,					-- ratio of this user's high score to the pattern high score
-	recordRank INT,					-- position of this record in this pattern leaderboard sorted / pooled by duration / catches
-	catches INT,					-- number of catches in this attempt (catch-based)
-	duration TIME,					-- duration of this attempt (time-based)
-	timeRecorded DATETIME,			-- when the record was added
+	isPersonalBest TINYINT(1) DEFAULT 0,	-- is this record the user's personal best for this pattern (and for this scoring method)?
+	score FLOAT,							-- ratio of this user's high score to the pattern high score
+	recordRank INT,							-- position of this record in this pattern leaderboard sorted / pooled by duration / catches
+	catches INT,							-- number of catches in this attempt (catch-based)
+	duration TIME,							-- duration of this attempt (time-based)
+	timeRecorded DATETIME,					-- when the record was added
 	video VARCHAR(512),
 	FOREIGN KEY (userUID) REFERENCES users(uid) ON DELETE CASCADE,
 	FOREIGN KEY (patternUID) REFERENCES patterns(uid) ON DELETE CASCADE,

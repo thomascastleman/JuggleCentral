@@ -25,10 +25,10 @@ function removeDup(a) {
 	}
 }
 
+// ensure there are no duplicates in name, email, or pattern name
 removeDup(random.names);
 removeDup(random.emails);
 removeDup(random.patterns);
-
 
 var NUM_USERS = 35;
 var NUM_ADMINS = 5;
@@ -124,57 +124,65 @@ function generateRecords(cb) {
 						for (var p = 0; p < patterns.length; p++) {
 							// if user participating in this pattern
 							if (Math.random() < PARTICIPATION) {
-								var attempts = Math.floor(Math.random() * MAX_NUM_ATTEMPTS) + 5;
-								var usingCatches = Math.random() < 0.5;
 								var catchScore, timeScore;
 
-								if (usingCatches) {
-									catchScore = Math.floor(Math.random() * 20) + patterns[p].numObjects;
-								} else {
-									timeScore = {
-										hours: 0,
-										minutes: 1,
-										seconds: 0
-									};
-								}
+								var catchAttempts = Math.floor(Math.random() * MAX_NUM_ATTEMPTS) + 5;
+								var timeAttempts = Math.floor(Math.random() * MAX_NUM_ATTEMPTS) + 5;
 
-								// for each of this user's attempts at this pattern
-								for (var r = 0; r < attempts; r++) {
-									var time = randomTime();
+								var catchScore = Math.floor(Math.random() * 20) + patterns[p].numObjects;
+								var timeScore = {
+									hours: 0,
+									minutes: 1,
+									seconds: 0
+								};
+
+								// for each of this user's catch attempts
+								for (var r = 0; r < catchAttempts; r++) {
+									var timeRecorded = randomTime();
 									
 									// add random record
 									records.push([
 										users[u].uid,
 										patterns[p].uid,
-										r == attempts - 1,
-										usingCatches ? catchScore : null,
-										!usingCatches ? timeScore.hours + ":" + timeScore.minutes + ":" + timeScore.seconds : null,
-										time,
+										r == catchAttempts - 1,
+										catchScore,
+										null,
+										timeRecorded,
 										Math.random() < P_VIDEO ? casual.url : null
 									]);
 
+									// increase catch score randomly
+									catchScore += Math.floor(Math.random() * 20);
+								}
 
-									// if catch-based record
-									if (usingCatches) {
-										// increase catch score randomly
-										catchScore += Math.floor(Math.random() * 20);
+								// for each of this user's time attempts at this pattern
+								for (var r = 0; r < timeAttempts; r++) {
+									var timeRecorded = randomTime();
+									
+									// add random record
+									records.push([
+										users[u].uid,
+										patterns[p].uid,
+										r == timeAttempts - 1,
+										null,
+										timeScore.hours + ":" + timeScore.minutes + ":" + timeScore.seconds,
+										timeRecorded,
+										Math.random() < P_VIDEO ? casual.url : null
+									]);
+	
+									// increase seconds of time score randomly
+									timeScore.seconds += Math.floor(Math.random() * 60);
 
-									// time-based record
-									} else {
-										// increase seconds of time score randomly
-										timeScore.seconds += Math.floor(Math.random() * 60);
+									// keep track of time accordingly
+									if (timeScore.seconds >= 60) {
+										timeScore.seconds %= 60;
+										timeScore.minutes++;
 
-										// keep track of time accordingly
-										if (timeScore.seconds >= 60) {
-											timeScore.seconds %= 60;
-											timeScore.minutes++;
-
-											if (timeScore.minutes >= 60) {
-												timeScore.hours++;
-											}
+										if (timeScore.minutes >= 60) {
+											timeScore.hours++;
 										}
 									}
-
+									
 								}
 							}
 						}
