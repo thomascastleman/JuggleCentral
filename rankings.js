@@ -539,6 +539,9 @@ module.exports = {
 
 	/*
 
+
+	-------------------- These will happen within maintenance.js, referencing the funcs from here --------------------
+
 	On Delete User:
 		Determine the patterns in which this user competed. Then remove their records. (affectedPatternsByUser & DELETE query)
 
@@ -604,16 +607,3 @@ module.exports = {
 	*/
 
 }
-
-// /* randomize user scores */
-// var query = "";
-// var update = [];
-
-// for (var i = 1; i < 42; i++) {
-// 	query += " WHEN uid = ? THEN ?";
-// 	update.push(i, Math.floor(Math.random() * 10));
-// }
-
-// con.query('UPDATE users SET score = CASE' + query + ' ELSE score END;', update, function(err) {
-// 	console.log(err);
-// });
