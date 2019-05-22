@@ -129,69 +129,98 @@ module.exports = {
 			constraint = " AND patternUID IN (" + patternUIDs.join(',') + ")";
 		}
 
-		/*
+		/*	This gets all the relevant PB records for these patterns, grouped off by pattern, and within that,
+			ordered catch records (best to worst) come first, then ordered duration records (best to worst) (converted to seconds already) */
+		con.query('SELECT records.*, TIME_TO_SEC(duration) AS seconds FROM records WHERE isPersonalBest = 1' + constraint + ' ORDER BY patternUID, catches DESC, seconds DESC;', function(err, records) {
+			if (!err && records !== undefined) {
+				// arguments & query constraints for singular UPDATE query at the end
+				var scoreArgs = [], scoreQuery = '';
+				var rankArgs = [], rankQuery = '';
 
-			'SELECT records.*, TIME_TO_SEC(duration) AS seconds FROM records WHERE isPersonalBest = 1' + constraint + ' ORDER BY patternUID, catches DESC, seconds DESC;''
-				This gets all the relevant PB records for these patterns, grouped off by pattern, and within that,
-				ordered catch records (best to worst) come first, then ordered duration records (best to worst) (converted to seconds already)
+				// for each retrieved PB record
+				for (var i = 0; i < records.length; i++) {
+					var j = i;
+					var rank = 1;
 
-			scoreArgs = []
-			scoreQuery = ""
+					// if this PB is a catch-based record
+					if (records[i].catches != null) {
+						// while we're still looking at a catch-based record
+						while (j < records.length && records[j].catches != null) {
+							// compute score as fraction of best catch-based value
+							records[j].score = records[j].catches / records[i].catches;
 
-			rankArgs = []
-			rankQuery = ""
+							// store UID and score as UPDATE arguments and add to update query
+							scoreArgs.push(records[j].uid, records[j].score);
+							scoreQuery += ' WHEN uid = ? THEN ?';
 
-			for i from 0 to records.length
-				j = i
-				rank = 1
+							// if this record has a lower score than the previous, start a new, lower rank
+							if (i != j && records[j].score < records[j - 1].score) {
+								rank++;
+							}
 
-				if records[i].catches NOT null
-					while records[j].catches also NOT null:
-						records[j].score = records[j].catches / records[i].catches
+							// add current rank to this record
+							records[j].rank = rank;
 
-						add (records[j].uid, records[j].score) to scoreArgs
-						add " WHEN uid = ? THEN ?" to scoreQuery
+							// store UID and rank as UPDATE arguments, add to update query 
+							rankArgs.push(records[j].uid, records[j].rank);
+							rankQuery += ' WHEN uid = ? THEN ?';
 
-						if i != j & records[j].score < records[j - 1].score
-							rank++
-						
-						records[j].rank = rank
+							// move to next record
+							j++;
+						}
+					}
 
-						add (records[j].uid, records[j].rank) to rankArgs
-						add " WHEN uid = ? THEN ?" to rankQuery
+					i = j;		// move i past all the catch-based records (if any)
+					rank = 1;	// reset the rank  back to 1 for time-based
 
-						j++
+					// if this record time-based
+					if (records[i].seconds != null) {
+						// while we're still looking at a time-based record
+						while (j < records.length && records[j].seconds != null) {
+							// calculate score as fraction of best time score
+							records[j].score = records[j].seconds / records[i].seconds;
 
-				i = j
-				rank = 1
+							// store UID and score as UPDATE args, add to update query
+							scoreArgs.push(records[j].uid, records[j].score);
+							scoreQuery += ' WHEN uid = ? THEN ?';
 
-				if records[i].seconds NOT null
-					while records[j].seconds also NOT null:
-						records[j].score = records[j].seconds / records[i].seconds
+							// if this record has a lower score than the previous, start a new, lower rank
+							if (i != j && records[j].score < records[j - 1].score) {
+								rank++;
+							}
 
-						add (records[j].uid, records[j].score) to scoreArgs
-						add " WHEN uid = ? THEN ?" to scoreQuery
+							// store rank in record
+							records[j].rank = rank;
 
-						if i != j & records[j].score < records[j - 1].score
-							rank++
-						
-						records[j].rank = rank
+							// store UID and rank as UPDATE args, add to query
+							rankArgs.push(records[j].uid, records[j].rank);
+							rankQuery += ' WHEN uid = ? THEN ?';
 
-						add (records[j].uid, records[j].rank) to rankArgs
-						add " WHEN uid = ? THEN ?" to rankQuery
+							// move to next record
+							j++;
+						}
+					}
 
-						j++
+					// move i to 1 before the last record we were looking at (so that when the loop increments i, we will be at the start of a new pattern)
+					i = j - 1;
+				}
 
-				i = j
+				// add rank arguments to end of score args array
+				var update = scoreArgs.concat(rankArgs);
 
-			
-			full = 'UPDATE records SET score = CASE' + scoreQuery + ' ELSE score END, recordRank = CASE' + rankQuery + ' ELSE recordRank;'
-
-			run full query with all of rankArgs added onto the end of scoreArgs as params
-			cb(err)
-
-
-		*/
+				// if there are any updates to make
+				if (update.length > 0) {
+					// apply updates to record scores & ranks
+					con.query('UPDATE records SET score = CASE' + scoreQuery + ' ELSE score END, recordRank = CASE' + rankQuery + ' ELSE recordRank END;', update, function(err) {
+						cb(err);
+					});
+				} else {
+					cb(err);
+				}
+			} else {
+				cb(err || "Unable to retrieve personal best record information for calculating record scores.");
+			}
+		});
 	},
 
 	/*	Calculate the difficulties of a subset of patterns, assuming the 
@@ -531,7 +560,6 @@ module.exports = {
 			Recalc user scores of those who competed in affected patterns. (affectedUsersByPattern with subset of patterns this user affected, calcUserScores with subset)
 
 		Recalc rank for everyone. (updateGlobalRanks)
-
 
 
 
