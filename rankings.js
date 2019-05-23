@@ -624,14 +624,17 @@ module.exports = {
 
 }
 
-// testing: calc avg scores, then pattern difficulties, then user scores, then global ranks
-// module.exports.updateAvgHighScores([], function(err) {
+// testing: calc record scores, avg scores, then pattern difficulties, then user scores, then global ranks
+// module.exports.updateRecordScoresAndLocalRanks([], function(err) {
 // 	console.log(err);
-// 	module.exports.calcPatternDifficulties([], function(err) {
+// 	module.exports.updateAvgHighScores([], function(err) {
 // 		console.log(err);
-// 		module.exports.calcUserScores(null, function(err) {
+// 		module.exports.calcPatternDifficulties([], function(err) {
 // 			console.log(err);
-// 			module.exports.updateGlobalRanks(function(err) { console.log(err); });
+// 			module.exports.calcUserScores([], function(err) {
+// 				console.log(err);
+// 				module.exports.updateGlobalRanks(function(err) { console.log(err); });
+// 			});
 // 		});
 // 	});
 // });
