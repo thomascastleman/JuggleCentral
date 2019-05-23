@@ -4,6 +4,7 @@
 */
 
 var con = require('./database.js').connection;
+var ranking = require('./ranking.js');
 
 module.exports = {
 
@@ -61,12 +62,29 @@ module.exports = {
 		}
 	},
 
-	//----------------------------------//
-	//		NEEDS IMPLEMENTATION		//
-	//----------------------------------//
 	// permanently deletes a user account
 	removeUser: function(uid, cb) {
+		/*
+			Determine the patterns in which this user competed. Then remove their records. (affectedPatternsByUser & DELETE query)
 
+			Update record scores & local ranks in all patterns they competed in. (updateRecordScoresAndLocalRanks)
+
+			Find the max avg time high score, and max avg catch high score across all patterns. (current maxes) (getMaxAvgHighScores)
+
+			Recalc & store avg high scores for affected patterns. (updateAvgHighScores)
+
+			Find the maxes again, and compare (getMaxAvgHighScores)
+
+			If either of maxes changed in value:
+				Recalc difficulties for all patterns (calcPatternDifficulties)
+				Recalc all the user scores, use to update global ranks. (calcUserScores & updateGlobalRanks)
+
+			If not:
+				Recalc difficulties for all affected patterns. (calcPatternDifficulties with subset)
+				Recalc user scores of those who competed in affected patterns. (affectedUsersByPattern with subset of patterns this user affected, calcUserScores with subset)
+
+			Recalc rank for everyone. (updateGlobalRanks)
+		*/
 	},
 
 	// adds a new juggling pattern to the patterns table, calls back on created pattern profile
@@ -88,158 +106,84 @@ module.exports = {
 		}
 	},
 
-	//----------------------------------//
-	//		NEEDS IMPLEMENTATION		//
-	//----------------------------------//
 	// edits all fields of an existing pattern
 	editPattern: function(uid, name, description, numObjects, gif, cb) {
-		// // ensure name & number of objects exist
-		// if (name && numObjects && numObjects > 0) {
-		// 	// run update query on specific pattern
-		// 	con.query('UPDATE patterns SET name = ?, description = ?, numObjects = ?, GIF = ? WHERE uid = ?;', [name, description, numObjects, gif, uid], function(err) {
-		// 		cb(err);
-
-
-
-
-		// 		// but this could cause changes too
-
-
-
-
-
-
-		// 	});
-		// } else {
-		// 	// error on insufficient fields
-		// 	cb("All required pattern fields must be filled out.");
-		// }
+		/*
+			If numObjects changed: (this changes difficulty of this pattern & therefore the user score of every competing user)
+				Recalc THIS pattern's difficulty (everything you need is stored) (calcPatternDifficulties for just this pattern)
+				Recalc user score of every user competing in this pattern, and update global rank (affectedUsersByPattern, and calcUserScores for subset, and updateGlobalRanks)
+		*/
 	},
 
-	//----------------------------------//
-	//		NEEDS IMPLEMENTATION		//
-	//----------------------------------//
 	// deletes an existing pattern and all associated records
 	removePattern: function(uid, cb) {
-		// // remove the pattern from patterns table
-		// con.query('DELETE FROM patterns WHERE uid = ?;', [uid], function(err) {
-		// 	if (!err) {
-
-
-		// 		// now recalc user score, and update global rankings. (this should be its own function)
-
-
-		// 	} else {
-		// 		cb(err);
-		// 	}
-		// });
+		/*
+			Recalc user scores of affected users, and update all global rank. (affectedUsersByPattern, calcUserScores, updateGlobalRanks)
+		*/
 	},
 
-	//----------------------------------//
-	//		NEEDS IMPLEMENTATION		//
-	//----------------------------------//
 	// adds a record linking a given user and pattern
 	addRecord: function(userUID, patternUID, catches, duration, timeRecorded, video, cb) {
-		// ensure only ONE of catches and duration is defined
+		/*
+			Ensure only ONE of catches and duration is defined (error otherwise)
+			Determine pattern UID of pattern in which record was added or removed.
+			handleRecordChange([patternUID])
+		*/
 	},
 
 	// edit the contents of one of your records
 	editRecord: function(uid, patternUID, catches, duration, video, cb) {
-		// if valid UID
-		if (uid && uid > 0) {
-			// update this record, replacing existing video link
-			con.query('UPDATE records SET video = ? WHERE uid = ?;', [video, uid], function(err) {
-				cb(err);
-			});
-		} else {
-			cb("Unable to update video link, as invalid record identifier was given.");
-		}
+		/*
+			IMPORTANT: patternUID, catches, duration,
+			non important: video
+			
+			Ensure only ONE of catches and duration is defined (error)
+
+			If pattern changed:
+				affected patterns = [old patternUID, new patternUID]
+			otherwise:
+				affected patterns = [pattern UID]
+
+			handleRecordChange(affectedPatterns)
+
+		*/
 	},
 
-	// IMPORTANT: patternUID, catches, duration,
-	// non important: video
-
-	//----------------------------------//
-	//		NEEDS IMPLEMENTATION		//
-	//----------------------------------//
 	// remove an existing record by UID
 	removeRecord: function(uid, cb) {
+		/*
+			Determine pattern UID of pattern in which record was added or removed.
+			handleRecordChange([patternUID])
+		*/
+	},
 
+	// used to handle a new / edited / removed record by updating scores & ranks as needed
+	handleRecordChange: function(affectedPatterns) {
+		/*
+			Maintain personal bests in affectedPatterns for this user. (maintainPB)
+
+			Recalc record scores in affectedPatterns, use to update ranks in affectedPatterns. (updateRecordScoresAndLocalRanks)
+
+			Find the current maxes for avg high score across all patterns (getMaxAvgHighScores)
+
+			Recalculate avg high score in affectedPatterns and store in DB. (updateAvgHighScores)
+
+			Find newMax's after this pattern's average recalculations (getMaxAvgHighScores)
+
+				If either max changed
+
+					Recalc all pattern difficulties. (calcPatternDifficulties on all)
+
+					Recalc all user scores (calcUserScores on all)
+
+				If both maxes DID NOT change
+
+					Recalc difficulty for affectedPatterns (calcPatternDifficulties for just this one)
+
+					Recalc user scores for users competing in this pattern (affectedUsersByPattern on affectedPatterns, and calcUserScores for subset)
+
+				Recalculate global rank for everyone. (updateGlobalRanks)
+		*/
 	}
 
 }
-
-/*
-
--------------------- These will happen within maintenance.js, referencing the funcs from ranking.js --------------------
-
-On Delete User:
-	Determine the patterns in which this user competed. Then remove their records. (affectedPatternsByUser & DELETE query)
-
-	Update record scores & local ranks in all patterns they competed in. (updateRecordScoresAndLocalRanks)
-
-	Find the max avg time high score, and max avg catch high score across all patterns. (current maxes) (getMaxAvgHighScores)
-
-	Recalc & store avg high scores for affected patterns. (updateAvgHighScores)
-
-	Find the maxes again, and compare (getMaxAvgHighScores)
-
-	If either of maxes changed in value:
-		Recalc difficulties for all patterns (calcPatternDifficulties)
-		Recalc all the user scores, use to update global ranks. (calcUserScores & updateGlobalRanks)
-
-	If not:
-		Recalc difficulties for all affected patterns. (calcPatternDifficulties with subset)
-		Recalc user scores of those who competed in affected patterns. (affectedUsersByPattern with subset of patterns this user affected, calcUserScores with subset)
-
-	Recalc rank for everyone. (updateGlobalRanks)
-
-
-On Delete / New Record:
-	Determine pattern UID of pattern in which record was added or removed.
-	handleRecordChange([patternUID])
-
-
-On Edit Record:
-	If pattern changed:
-		affected patterns = [old patternUID, new patternUID]
-	otherwise:
-		affected patterns = [pattern UID]
-
-	handleRecordChange(affectedPatterns)
-
-// used to handle a new / edited / removed record by updating scores & ranks as needed
-handleRecordChange(affectedPatterns)
-	Maintain personal bests in affectedPatterns for this user. (maintainPB)
-
-	Recalc record scores in affectedPatterns, use to update ranks in affectedPatterns. (updateRecordScoresAndLocalRanks)
-
-	Find the current maxes for avg high score across all patterns (getMaxAvgHighScores)
-
-	Recalculate avg high score in affectedPatterns and store in DB. (updateAvgHighScores)
-
-	Find newMax's after this pattern's average recalculations (getMaxAvgHighScores)
-
-		If either max changed
-
-			Recalc all pattern difficulties. (calcPatternDifficulties on all)
-
-			Recalc all user scores (calcUserScores on all)
-
-		If both maxes DID NOT change
-
-			Recalc difficulty for affectedPatterns (calcPatternDifficulties for just this one)
-
-			Recalc user scores for users competing in this pattern (affectedUsersByPattern on affectedPatterns, and calcUserScores for subset)
-
-		Recalculate global rank for everyone. (updateGlobalRanks)
-
-On Edit Pattern:
-	If numObjects changed: (this changes difficulty of this pattern & therefore the user score of every competing user)
-		Recalc THIS pattern's difficulty (everything you need is stored) (calcPatternDifficulties for just this pattern)
-		Recalc user score of every user competing in this pattern, and update global rank (affectedUsersByPattern, and calcUserScores for subset, and updateGlobalRanks)
-
-On Delete Pattern:
-	Recalc user scores of affected users, and update all global rank. (affectedUsersByPattern, calcUserScores, updateGlobalRanks)
-
-*/
