@@ -180,8 +180,7 @@ On Delete User:
 
 	Find the max avg time high score, and max avg catch high score across all patterns. (current maxes) (getMaxAvgHighScores)
 
-	For each of the affected patterns:
-		Recalc & store avg high score for both categories. (updateAvgHighScores)
+	Recalc & store avg high scores for affected patterns. (updateAvgHighScores)
 
 	Find the maxes again, and compare (getMaxAvgHighScores)
 
@@ -195,27 +194,29 @@ On Delete User:
 
 	Recalc rank for everyone. (updateGlobalRanks)
 
-On Edit Record:
 
+On Delete / New Record:
+	Determine pattern UID of pattern in which record was added or removed.
+	handleRecordChange([patternUID])
+
+
+On Edit Record:
 	If pattern changed:
 		affected patterns = [old patternUID, new patternUID]
 	otherwise:
 		affected patterns = [pattern UID]
 
-	
+	handleRecordChange(affectedPatterns)
 
+// used to handle a new / edited / removed record by updating scores & ranks as needed
 handleRecordChange(affectedPatterns)
+	Maintain personal bests in affectedPatterns for this user. (maintainPB)
 
-
-
-On Delete / New Record:
-	Maintain personal bests in this pattern for this user. (maintainPB)
-
-	Recalc record scores in this pattern, use to update ranks in this pattern. (updateRecordScoresAndLocalRanks)
+	Recalc record scores in affectedPatterns, use to update ranks in affectedPatterns. (updateRecordScoresAndLocalRanks)
 
 	Find the current maxes for avg high score across all patterns (getMaxAvgHighScores)
 
-	Recalculate avg high score in this pattern and store in DB. (updateAvgHighScores)
+	Recalculate avg high score in affectedPatterns and store in DB. (updateAvgHighScores)
 
 	Find newMax's after this pattern's average recalculations (getMaxAvgHighScores)
 
@@ -227,9 +228,9 @@ On Delete / New Record:
 
 		If both maxes DID NOT change
 
-			Recalc difficulty for only this pattern (calcPatternDifficulties for just this one)
+			Recalc difficulty for affectedPatterns (calcPatternDifficulties for just this one)
 
-			Recalc user scores for users competing in this pattern (affectedUsersByPattern, and calcUserScores for subset)
+			Recalc user scores for users competing in this pattern (affectedUsersByPattern on affectedPatterns, and calcUserScores for subset)
 
 		Recalculate global rank for everyone. (updateGlobalRanks)
 

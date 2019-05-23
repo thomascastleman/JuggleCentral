@@ -336,7 +336,8 @@ module.exports = {
 		}
 	},
 
-	// determine the UIDs of users who compete in a given pattern
+	/*	Determine the UIDs of users who compete in a subset of patterns.
+		If no patterns given, function will return NO AFFECTED USERS. */
 	affectedUsersByPattern: function(patternUIDs, cb) {
 		// default to no affected users if no subset given
 		if (!patternUIDs || patternUIDs.length == 0) {
