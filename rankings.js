@@ -4,83 +4,101 @@
 */
 
 var con = require('./database.js').connection;
+var sys = require('./settings.js');
 
 module.exports = {
 
 	// calculate global user scores on a subset of users, or all users if no subset specified
 	calcUserScores: function(userUIDs, cb) {
 		// query constraint to limit records to subset of users
-		var constraint = "";
+		var constraintA = "", constraintB = "";
 
 		// if only calculating for a subset of users
 		if (userUIDs && userUIDs.length > 0) {
-			constraint = " AND r.userUID IN (" + userUIDs.join(',') + ")";
+			constraintA = " AND uid IN (" + userUIDs.join(',') + ")";
+			constraintB = " AND r.userUID IN (" + userUIDs.join(',') + ")";
 		}
 
-		/*	This gets all of each user's PB records (both catches and time, so we'll have to choose the most recent), 
-			ordered by user, pattern UID, and timeRecorded so the first in the pair of max 2 records per pattern will
-			be the more recent one. */
-		con.query('SELECT r.userUID, r.score, r.timeRecorded, p.uid AS patternUID, p.difficulty as patternDifficulty FROM records r JOIN patterns p ON r.patternUID = p.uid WHERE r.isPersonalBest = 1' + constraint + ' ORDER BY r.userUID, patternUID ASC, timeRecorded DESC;', [], function(err, rows){
-			// if there isn't an sql error
-			if (!err && rows != undefined) {
-				// records do exist for these users
-				if (rows.length > 0){
-					/*
-						this will add up all of the user's scores and then insert them into the db.
-						
+		// reset user score of all affected users to 0 before updating, to ensure updates are applied even to those who have no records
+		con.query('UPDATE users SET score = 0 WHERE 1 = 1' + constraintA + ';', function(err) {
+			if (!err) {
+				/*	This gets all of each user's PB records (both catches and time, so we'll have to choose the most recent), 
+					ordered by user, pattern UID, and timeRecorded so the first in the pair of max 2 records per pattern will
+					be the more recent one. */
+				con.query('SELECT r.userUID, r.score, r.timeRecorded, p.uid AS patternUID, p.difficulty as patternDifficulty FROM records r JOIN patterns p ON r.patternUID = p.uid WHERE r.isPersonalBest = 1' + constraintB + ' ORDER BY r.userUID, patternUID ASC, timeRecorded DESC;', [], function(err, records){
+					// if there isn't an sql error
+					if (!err && records != undefined) {
+							/*
+								this will add up all of the user's scores and then insert them into the db.
+								
+								var userScores = {};
+								var insertQuery = "";
+								var insertVALUES = [];
+								var curUserUID = 0;
+
+								for each record
+									if userUID associated with this record does not equal the curUserUID
+										if userScores[curUserUID] exists
+											insertQuery += "WHEN uid = ? THEN ? "
+											insertValues.push(curUserUID, userScores[curUserUID]);
+								     update the curUserUID to the userUID associated with this record
+										userScores[the new userUID] = 0
+								
+									userScores[the userUID associated with that record] += (record's score * record's associated pattern's difficulty)
+
+								con.query('UPDATE users SET score = CASE ' + insertQuery + 'ELSE score END;', [insertValues], function(err){
+									cb(err);
+								});
+							*/
+
+						// mapping from user UID to user score
 						var userScores = {};
-						var insertQuery = "";
-						var insertVALUES = [];
-						var curUserUID = 0;
 
-						for each record
-							if userUID associated with this record does not equal the curUserUID
-								if userScores[curUserUID] exists
-									insertQuery += "WHEN uid = ? THEN ? "
-									insertValues.push(curUserUID, userScores[curUserUID]);
-						     update the curUserUID to the userUID associated with this record
-								userScores[the new userUID] = 0
-						
-							userScores[the userUID associated with that record] += (record's score * record's associated pattern's difficulty)
+						// for each record, add the record score of most recent PB to user score
+						for (var i = 0; i < records.length; i++) {
+							// if no score in userScores mapping yet, default to 0
+							if (userScores[records[i].userUID] == null) {
+								userScores[records[i].userUID] = 0;
+							}
 
-						con.query('UPDATE users SET score = CASE ' + insertQuery + 'ELSE score END;', [insertValues], function(err){
+							// user score = (record score) * (pattern difficulty)
+							userScores[records[i].userUID] += records[i].score * records[i].patternDifficulty;
+
+							// if next record exists and is from same pattern
+							if (i + 1 < records.length && records[i + 1].patternUID == records[i].patternUID) {
+								i++;	// skip the next record, as it's for the same pattern but is less recent than this one
+							}
+						}
+
+						var query = "";
+						var args = [];
+
+						// for each user for which we calculated an updated score
+						for (var userUID in userScores) {
+							if (userScores.hasOwnProperty(userUID)) {
+								// add user UID, user score to query arguments 
+								args.push(userUID, userScores[userUID] * sys.userScoreScalingFactor);
+
+								// build query
+								query += " WHEN uid = ? THEN ?";
+							}
+						}
+
+						// if something to update
+						if (args.length > 0) {
+							// apply updates in DB
+							con.query('UPDATE users SET score = CASE' + query + ' ELSE score END;', args, function(err) {
+								cb(err);
+							});
+						} else {
 							cb(err);
-						});
-					*/
-
-
-
-					/*
-
-					Here's my take on the matter (with parsing for more recent PB)
-
-						userScores = {}
-
-						for i = 0 to records.length
-							if userScores[userUID] does not exist
-								userScores[userUID] = 0
-
-							userScores[userUID] += (records[i].score) * (records[i].patternDifficulty)
-
-							if records[i + 1] has same patternUID:
-								i++ (skip that PB record, it's the less recent one)
-
-						query = ""
-						insert = []
-						for each userUID in userScores object
-							add userUID, userScores[userUID] to insert
-							add " WHEN uid = ? THEN ?" to query
-
-
-						if query non-empty, run 'UPDATE users SET score = CASE' + query + ' ELSE score END;'
-						
-					*/
-
-				} else {
-					cb("There are no records from which to calculate user scores.");
-				}
+						}
+					} else {
+						cb("There was an error with retrieval of record information.");
+					}
+				});
 			} else {
-				cb("There was an error with retrieval of record information.");
+				cb(err || "Unable to reset user scores to 0 before updating.");
 			}
 		});
 	},
@@ -222,7 +240,8 @@ module.exports = {
 
 	/*	Calculate the difficulties of a subset of patterns, assuming the 
 		number of objects and average high scores have been updated already. 
-		If no subset given, calculate for all patterns. */
+		If no subset given, calculate for all patterns.
+		ASSUMES stored average high scores are up to date. */
 	calcPatternDifficulties: function(patternUIDs, cb) {
 		var constraint = "";
 
@@ -604,3 +623,15 @@ module.exports = {
 	*/
 
 }
+
+// testing: calc avg scores, then pattern difficulties, then user scores, then global ranks
+// module.exports.updateAvgHighScores([], function(err) {
+// 	console.log(err);
+// 	module.exports.calcPatternDifficulties([], function(err) {
+// 		console.log(err);
+// 		module.exports.calcUserScores(null, function(err) {
+// 			console.log(err);
+// 			module.exports.updateGlobalRanks(function(err) { console.log(err); });
+// 		});
+// 	});
+// });

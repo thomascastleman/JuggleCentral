@@ -9,6 +9,8 @@ module.exports = {
 
 	/*	Required domain for new user account emails.
 		Use a regular expression that will match any email from your domain. */
-	emailDomainRestriction: /.+?@(students\.)?stab\.org/
+	emailDomainRestriction: /.+?@(students\.)?stab\.org/,
 
+	// amount by which to scale up user scores (higher scale, greater precision)
+	userScoreScalingFactor: 100
 }
