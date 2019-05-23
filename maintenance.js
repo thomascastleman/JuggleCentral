@@ -45,34 +45,19 @@ module.exports = {
 		}
 	},
 
-	// edits the bio of an existing user profile
-	editBio: function(uid, bio, cb){
-		// check whether the uid parameter isn't null
+
+	/*	Edit a user's bio or isAdmin status
+		If either argument null, do not update that field. */
+	editUser: function(uid, bio, isAdmin, cb) {
+		// ensure user is identified
 		if (uid && uid > 0) {
-			//change the user's bio
-			con.query('UPDATE users SET bio = ? WHERE uid = ?;', [bio, uid], function(err){
+			// change the user's profile
+			con.query('UPDATE users SET bio = CASE WHEN ? IS NOT NULL THEN ? ELSE bio END, isAdmin = CASE WHEN ? IS NOT NULL THEN ? ELSE isAdmin END WHERE uid = ?;', [bio, bio, isAdmin, isAdmin, uid], function(err){
 				// callback on the sql error
 				cb(err);
 			});
-		}
-		// if the uid is null or negative then callback the error.
-		else {
+		} else {
 			cb("Unable to edit user, invalid identifier given.");
-		}
-	},
-
-
-	// Changes the admins status based on a 0,1 value.	
-	changeAdminStatus: function(userUID, isAdmin, cb){
-		//ensure userUID and isAdmin exist
-		if(userUID != undefined && isAdmin != undefined && isAdmin >= 0 && isAdmin <= 1){
-			//change the admin status of the user
-			con.query('UPDATE users SET isAdmin = ? WHERE uid = ?;', [isAdmin, userUID], function(err){
-				cb(err);
-			});
-
-		}else{
-			cb("Unable to change admin status, as insufficient identifier or admin status information given.");
 		}
 	},
 
@@ -155,11 +140,11 @@ module.exports = {
 	//----------------------------------//
 	// adds a record linking a given user and pattern
 	addRecord: function(userUID, patternUID, catches, duration, timeRecorded, video, cb) {
-
+		// ensure only ONE of catches and duration is defined
 	},
 
-	// edit the video link of one of your records. 
-	editVideoLink: function(uid, video, cb) {
+	// edit the contents of one of your records
+	editRecord: function(uid, patternUID, catches, duration, video, cb) {
 		// if valid UID
 		if (uid && uid > 0) {
 			// update this record, replacing existing video link
@@ -171,6 +156,9 @@ module.exports = {
 		}
 	},
 
+	// IMPORTANT: patternUID, catches, duration,
+	// non important: video
+
 	//----------------------------------//
 	//		NEEDS IMPLEMENTATION		//
 	//----------------------------------//
@@ -180,3 +168,77 @@ module.exports = {
 	}
 
 }
+
+/*
+
+-------------------- These will happen within maintenance.js, referencing the funcs from ranking.js --------------------
+
+On Delete User:
+	Determine the patterns in which this user competed. Then remove their records. (affectedPatternsByUser & DELETE query)
+
+	Update record scores & local ranks in all patterns they competed in. (updateRecordScoresAndLocalRanks)
+
+	Find the max avg time high score, and max avg catch high score across all patterns. (current maxes) (getMaxAvgHighScores)
+
+	For each of the affected patterns:
+		Recalc & store avg high score for both categories. (updateAvgHighScores)
+
+	Find the maxes again, and compare (getMaxAvgHighScores)
+
+	If either of maxes changed in value:
+		Recalc difficulties for all patterns (calcPatternDifficulties)
+		Recalc all the user scores, use to update global ranks. (calcUserScores & updateGlobalRanks)
+
+	If not:
+		Recalc difficulties for all affected patterns. (calcPatternDifficulties with subset)
+		Recalc user scores of those who competed in affected patterns. (affectedUsersByPattern with subset of patterns this user affected, calcUserScores with subset)
+
+	Recalc rank for everyone. (updateGlobalRanks)
+
+On Edit Record:
+
+	If pattern changed:
+		affected patterns = [old patternUID, new patternUID]
+	otherwise:
+		affected patterns = [pattern UID]
+
+	
+
+handleRecordChange(affectedPatterns)
+
+
+
+On Delete / New Record:
+	Maintain personal bests in this pattern for this user. (maintainPB)
+
+	Recalc record scores in this pattern, use to update ranks in this pattern. (updateRecordScoresAndLocalRanks)
+
+	Find the current maxes for avg high score across all patterns (getMaxAvgHighScores)
+
+	Recalculate avg high score in this pattern and store in DB. (updateAvgHighScores)
+
+	Find newMax's after this pattern's average recalculations (getMaxAvgHighScores)
+
+		If either max changed
+
+			Recalc all pattern difficulties. (calcPatternDifficulties on all)
+
+			Recalc all user scores (calcUserScores on all)
+
+		If both maxes DID NOT change
+
+			Recalc difficulty for only this pattern (calcPatternDifficulties for just this one)
+
+			Recalc user scores for users competing in this pattern (affectedUsersByPattern, and calcUserScores for subset)
+
+		Recalculate global rank for everyone. (updateGlobalRanks)
+
+On Edit Pattern:
+	If numObjects changed: (this changes difficulty of this pattern & therefore the user score of every competing user)
+		Recalc THIS pattern's difficulty (everything you need is stored) (calcPatternDifficulties for just this pattern)
+		Recalc user score of every user competing in this pattern, and update global rank (affectedUsersByPattern, and calcUserScores for subset, and updateGlobalRanks)
+
+On Delete Pattern:
+	Recalc user scores of affected users, and update all global rank. (affectedUsersByPattern, calcUserScores, updateGlobalRanks)
+
+*/

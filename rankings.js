@@ -507,24 +507,64 @@ module.exports = {
 		});
 	},
 
-	/*	Redetermine the isPersonalBest flag for a given user competing in a given event
-		If scoringIsTime, the affected category is time-based scoring, otherwise catch-based */
-	maintainPB: function(userUID, patternUID, cb) {
+	/*	Redetermine the isPersonalBest flag for a given user competing in a given subset of patterns.
+		Operates on both catch- and time-based records.
+		If no subset given, it will update personal bests for all patterns in which the user competes*/
+	maintainPBs: function(userUID, patternUIDs, cb) {
 		// ensure valid user and pattern given
-		if (userUID && userUID > 0 && patternUID && patternUID > 0) {
+		if (userUID && userUID > 0) {
+			var constraintA = "", constraintB = "";
+
+			// add query constraint to pattern subset if given
+			if (patternUIDs && patternUIDs.length > 0) {
+				var patternSet = patternUIDs.join(',');
+				constraintA = " AND patternUID IN (" + patternSet + ")";
+				constraintB = " AND records.patternUID IN (" + patternSet + ")";
+			}
+
 			// default all records under this user & pattern to NOT the PB
-			con.query('UPDATE records SET isPersonalBest = 0 WHERE userUID = ? AND patternUID = ?;', [userUID, patternUID], function(err) {
+			con.query('UPDATE records SET isPersonalBest = 0 WHERE userUID = ?' + constraintA + ';', [userUID], function(err) {
 				if (!err) {
 					// get the personal best records in each scoring method for this user & pattern
-					con.query('SELECT * FROM records JOIN (SELECT duration IS NOT NULL AS isTimeBased, catches IS NOT NULL AS isCatchBased, MAX(duration) AS maxDuration, MAX(catches) AS maxCatches FROM records WHERE userUID = ? AND patternUID = ? GROUP BY isTimeBased, isCatchBased) AS x ON (records.duration = x.maxDuration OR records.catches = x.maxCatches) WHERE userUID = ? AND patternUID = ?;', [userUID, patternUID, userUID, patternUID], function(err, rows) {
+					con.query('SELECT * FROM records JOIN (SELECT userUID, patternUID, duration IS NOT NULL AS isTimeBased, catches IS NOT NULL AS isCatchBased, MAX(duration) AS maxDuration, MAX(catches) AS maxCatches FROM records WHERE userUID = ?' + constraintA + ' GROUP BY isTimeBased, isCatchBased, patternUID) AS x ON (records.duration = x.maxDuration OR records.catches = x.maxCatches) AND records.patternUID = x.patternUID WHERE records.userUID = ?' + constraintB + ' ORDER BY records.timeRecorded ASC;', [userUID, userUID], function(err, rows) {
 						if (!err && rows !== undefined) {
 							// if there are personal bests to flag
 							if (rows.length > 0) {
+								// association of pattern UID to its time and catch PB's for this user
+								var patternToPBs = {};
+
+								/*	Get each pattern's time and catch personal bests from the query result
+									This will overwrite with each progressive row, so if duplicate PBs exist for a given pattern / category,
+									the most recent record will be the only one marked with isPersonalBest = 1 (result is already ordered by timeRecorded) */
+								for (var i = 0; i < rows.length; i++) {
+									var pUID = rows[i].patternUID;
+
+									// if no existing object for this pattern, initialize
+									if (patternToPBs[pUID] == null) {
+										patternToPBs[pUID] = {};
+									}
+
+									if (rows[i].isTimeBased == 1) {
+										// store record UID as time PB for this pattern
+										patternToPBs[pUID].timePBuid = rows[i].uid;
+									} else {
+										// store record UID as catch PB for this pattern 
+										patternToPBs[pUID].catchPBuid = rows[i].uid;
+									}
+								}
+
+								// array to hold UIDs of all records that will be made PBs
 								var uids = [];
 
-								// add record UIDs (however many) to list of UIDs for UPDATE query
-								for (var i = 0; i < rows.length; i++) {
-									uids.push(rows[i].uid);
+								// for each pattern
+								for (var pUID in patternToPBs) {
+									if (patternToPBs.hasOwnProperty(pUID)) {
+										var PBs = patternToPBs[pUID];
+
+										// if PBs exist, add their record UIDs to update query arguments
+										if (PBs.catchPBuid) uids.push(PBs.catchPBuid);
+										if (PBs.timePBuid) uids.push(PBs.timePBuid);
+									}
 								}
 
 								// convert UID array into comma-separated string
@@ -551,76 +591,6 @@ module.exports = {
 			cb("Unable to maintain the personal best record due to invalid user or pattern given.");
 		}
 	}
-
-
-	/*
-
-
-	-------------------- These will happen within maintenance.js, referencing the funcs from here --------------------
-
-	On Delete User:
-		Determine the patterns in which this user competed. Then remove their records. (affectedPatternsByUser & DELETE query)
-
-		Update record scores & local ranks in all patterns they competed in. (updateRecordScoresAndLocalRanks)
-
-		Find the max avg time high score, and max avg catch high score across all patterns. (current maxes) (getMaxAvgHighScores)
-
-		For each of the affected patterns:
-			Recalc & store avg high score for both categories. (updateAvgHighScores)
-
-		Find the maxes again, and compare (getMaxAvgHighScores)
-
-		If either of maxes changed in value:
-			Recalc difficulties for all patterns (calcPatternDifficulties)
-			Recalc all the user scores, use to update global ranks. (calcUserScores & updateGlobalRanks)
-
-		If not:
-			Recalc difficulties for all affected patterns. (calcPatternDifficulties with subset)
-			Recalc user scores of those who competed in affected patterns. (affectedUsersByPattern with subset of patterns this user affected, calcUserScores with subset)
-
-		Recalc rank for everyone. (updateGlobalRanks)
-
-
-
-
-	On Delete / New Record:
-		Maintain personal best for this category in this pattern for this user.
-
-		Recalc record scores in this pattern, use to update ranks in this pattern. (updateRecordScoresAndLocalRanks)
-
-		Find prevMax, the current max avg high score (all patterns) for the same category that this record is in (getMaxAvgHighScores)
-
-		Recalculate avg high score in this pattern for this category, avg, and store in DB. (updateAvgHighScores)
-
-		Find newMax for this category (getMaxAvgHighScores)
-
-			If max changed
-
-				Recalc all pattern difficulties. (calcPatternDifficulties on all)
-
-				Recalc all user scores (calcUserScores on all)
-
-
-			If max DID NOT change
-
-				Recalc difficulty for only this pattern (calcPatternDifficulties for just this one)
-
-				Recalc user scores for users competing in this pattern (affectedUsersByPattern, and calcUserScores for subset)
-
-			Recalculate global rank for everyone. (updateGlobalRanks)
-
-
-	On Edit Pattern:
-		If numObjects changed: (this changes difficulty of this pattern & therefore the user score of every competing user)
-			Recalc THIS pattern's difficulty (everything you need is stored) (calcPatternDifficulties for just this pattern)
-			Recalc user score of every user competing in this pattern, and update global rank (affectedUsersByPattern, and calcUserScores for subset, and updateGlobalRanks)
-
-
-
-	On Delete Pattern:
-		Recalc user scores of affected users, and update all global rank. (affectedUsersByPattern, calcUserScores, updateGlobalRanks)
-
-	*/
 
 }
 
