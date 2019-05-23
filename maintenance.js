@@ -4,7 +4,7 @@
 */
 
 var con = require('./database.js').connection;
-var ranking = require('./ranking.js');
+var ranking = require('./rankings.js');
 
 module.exports = {
 
@@ -46,7 +46,6 @@ module.exports = {
 		}
 	},
 
-
 	/*	Edit a user's bio or isAdmin status
 		If either argument null, do not update that field. */
 	editUser: function(uid, bio, isAdmin, cb) {
@@ -62,29 +61,91 @@ module.exports = {
 		}
 	},
 
-	// permanently deletes a user account
+	// permanently deletes a user account, and updates all affected ranking data
 	removeUser: function(uid, cb) {
-		/*
-			Determine the patterns in which this user competed. Then remove their records. (affectedPatternsByUser & DELETE query)
+		// ensure positive user UID exists
+		if (uid && uid > 0) {
+			// determine which patterns this user competed in
+			ranking.affectedPatternsByUser([uid], function(err, affectedPatterns) {
+				if (!err) {
+					// remove user and all of their records
+					con.query('DELETE FROM users WHERE uid = ?;', [uid], function(err) {
+						if (!err) {
+							// update record scores / local ranks in patterns in which this user competed
+							ranking.updateRecordScoresAndLocalRanks(affectedPatterns, function(err) {
+								if (!err) {
+									// get the current max averages (before updating averages to reflect user deletion)
+									ranking.getMaxAvgHighScores(function(err, maxAvgCatch, maxAvgTime) {
+										if (!err) {
+											// recalculate and store average high scores for affected patterns now that records have been deleted
+											ranking.updateAvgHighScores(affectedPatterns, function(err) {
+												if (!err) {
+													// get the (potentially) updated max averages
+													ranking.getMaxAvgHighScores(function(err, newMaxAvgCatch, newMaxAvgTime) {
+														if (!err) {
+															// determine which users are affected by changes in the affected patterns
+															ranking.affectedUsersByPattern(affectedPatterns, function(err, affectedUsers) {
+																if (!err) {
+																	var patternsToUpdate, usersToUpdate;
 
-			Update record scores & local ranks in all patterns they competed in. (updateRecordScoresAndLocalRanks)
+																	// if max averages changed
+																	if (newMaxAvgCatch != maxAvgCatch || newMaxAvgTime != maxAvgTime) {
+																		patternsToUpdate = [];	// update ALL patterns
+																		usersToUpdate = [];		// update ALL users
+																	} else {
+																		patternsToUpdate = affectedPatterns;	// only update affected patterns
+																		usersToUpdate = affectedUsers;			// only update affected users
+																	}
 
-			Find the max avg time high score, and max avg catch high score across all patterns. (current maxes) (getMaxAvgHighScores)
-
-			Recalc & store avg high scores for affected patterns. (updateAvgHighScores)
-
-			Find the maxes again, and compare (getMaxAvgHighScores)
-
-			If either of maxes changed in value:
-				Recalc difficulties for all patterns (calcPatternDifficulties)
-				Recalc all the user scores, use to update global ranks. (calcUserScores & updateGlobalRanks)
-
-			If not:
-				Recalc difficulties for all affected patterns. (calcPatternDifficulties with subset)
-				Recalc user scores of those who competed in affected patterns. (affectedUsersByPattern with subset of patterns this user affected, calcUserScores with subset)
-
-			Recalc rank for everyone. (updateGlobalRanks)
-		*/
+																	// update pattern difficulties appropriately
+																	ranking.calcPatternDifficulties(patternsToUpdate, function(err) {
+																		if (!err) {
+																			// update user scores appropriately
+																			ranking.calcUserScores(usersToUpdate, function(err) {
+																				if (!err) {
+																					// update global rankings to reflect changes in user scores
+																					ranking.updateGlobalRanks(function(err) {
+																						cb(err);
+																					});
+																				} else {
+																					cb(err);
+																				}
+																			});
+																		} else {
+																			cb(err);
+																		}
+																	});
+																} else {
+																	cb(err);
+																}
+															});
+														} else {
+															cb(err);
+														}
+													});
+												} else {
+													cb(err);
+												}
+											});
+										} else {
+											cb(err);
+										}
+									});
+								} else {
+									cb(err);
+								}
+							});
+						} else {
+							cb(err);
+						}
+					});
+				} else {
+					cb(err);
+				}
+			});
+		} else {
+			cb("Unable to remove user as invalid identifier given.");
+		}
 	},
 
 	// adds a new juggling pattern to the patterns table, calls back on created pattern profile
