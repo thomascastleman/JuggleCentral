@@ -17,19 +17,14 @@ module.exports = {
 			constraint = " AND r.userUID IN (" + userUIDs.join(',') + ")";
 		}
 
-		// get the score of each users best records,
-		con.query('SELECT r.userUID, r.score, p.difficulty as patternDifficulty FROM records r JOIN patterns p ON r.patternUID = p.uid WHERE r.isPersonalBest = 1' + constraint + ' ORDER BY r.userUID;', [], function(err, rows){
+		/*	This gets all of each user's PB records (both catches and time, so we'll have to choose the most recent), 
+			ordered by user, pattern UID, and timeRecorded so the first in the pair of max 2 records per pattern will
+			be the more recent one. */
+		con.query('SELECT r.userUID, r.score, r.timeRecorded, p.uid AS patternUID, p.difficulty as patternDifficulty FROM records r JOIN patterns p ON r.patternUID = p.uid WHERE r.isPersonalBest = 1' + constraint + ' ORDER BY r.userUID, patternUID ASC, timeRecorded DESC;', [], function(err, rows){
 			// if there isn't an sql error
-			if (!err && rows != undefined){
+			if (!err && rows != undefined) {
 				// records do exist for these users
 				if (rows.length > 0){
-					
-
-					// !!!!!!!!!!!!!!
-					// MAKE SURE WE USE THE RECORD SCORE OF THIS USER'S MOST RECENT PERSONAL BEST (there are two PB's per event possible, one for catches, one for duration--use the more recent when calculating user score)
-					// !!!!!!!!!!!!!!
-
-
 					/*
 						this will add up all of the user's scores and then insert them into the db.
 						
@@ -57,16 +52,18 @@ module.exports = {
 
 					/*
 
-					Here's my take on the matter:
+					Here's my take on the matter (with parsing for more recent PB)
 
 						userScores = {}
 
-						for each record (userUID, score, difficulty)
+						for i = 0 to records.length
 							if userScores[userUID] does not exist
 								userScores[userUID] = 0
 
-							userScores[userUID] += (record score) * (difficulty)
+							userScores[userUID] += (records[i].score) * (records[i].patternDifficulty)
 
+							if records[i + 1] has same patternUID:
+								i++ (skip that PB record, it's the less recent one)
 
 						query = ""
 						insert = []
