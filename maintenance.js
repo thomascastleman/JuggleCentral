@@ -226,9 +226,25 @@ module.exports = {
 
 	// deletes an existing pattern and all associated records
 	removePattern: function(uid, cb) {
-		/*
-			Recalc user scores of affected users, and update all global rank. (affectedUsersByPattern, calcUserScores, updateGlobalRanks)
-		*/
+		// get users whose scores are affected by this pattern (relies on records, so we have to query this before deleting the pattern)
+		ranking.affectedUsersByPattern([uid], function(err, affectedUsers) {
+			// remove pattern from patterns table & delete all associated records
+			con.query('DELETE FROM patterns WHERE uid = ?;', [uid], function(err) {
+				if (!err) {
+					// recalculate user scores for these users, without this pattern
+					ranking.calcUserScores(affectedUsers, function(err) {
+						if (!err) {
+							// update the global rankings accordingly
+							ranking.updateGlobalRanks(cb);
+						} else {
+							cb(err);
+						}
+					});
+				} else {
+					cb(err);
+				}
+			});
+		});
 	},
 
 	// adds a record linking a given user and pattern
