@@ -591,6 +591,94 @@ module.exports = {
 			// error lack of requirements
 			cb("Unable to maintain the personal best record due to invalid user or pattern given.");
 		}
+	},
+
+	// handle a change in pattern difficulty for a subset of patterns, updating users scores / rankings accordingly
+	handlePatternDifficultyChange: function(affectedPatterns, affectedUsers, cb) {
+		// update pattern difficulties appropriately
+		module.exports.calcPatternDifficulties(affectedPatterns, function(err) {
+			if (!err) {
+				// update user scores appropriately
+				module.exports.calcUserScores(affectedUsers, function(err) {
+					if (!err) {
+						// update global rankings to reflect changes in user scores
+						module.exports.updateGlobalRanks(cb);
+					} else {
+						cb(err);
+					}
+				});
+			} else {
+				cb(err);
+			}
+		});
+	},
+
+	// used to handle a new / edited / removed record by updating scores & ranks as needed
+	handleRecordChange: function(userUID, affectedPatterns, cb) {
+		// maintain the personal bests in patterns affected by this record (usually just one, possibly two with an edit and pattern change (old and new))
+		module.exports.maintainPBs(userUID, affectedPatterns, function(err) {
+			if (!err) {
+				// maintain all pattern data in those affected by this change in record
+				module.exports.maintainPatternInfo(affectedPatterns, cb);
+			} else {
+				cb(err);
+			}
+		});
+	},
+
+	/*	Maintains all important info of patterns that have been affected by some change.
+		Will update local scores / ranks, check for new max averages, update
+		pattern difficulties appropriately and recalculate user scores / global
+		rankings as necessary. */
+	maintainPatternInfo: function(affectedPatterns, cb) {
+		// recalculate record scores & local ranks in affected patterns
+		module.exports.updateRecordScoresAndLocalRanks(affectedPatterns, function(err) {
+			if (!err) {
+				// get current max averages
+				module.exports.getMaxAvgHighScores(function(err, oldMaxAvgCatch, oldMaxAvgTime) {
+					if (!err) {
+						// update the average high scores for affected patterns
+						module.exports.updateAvgHighScores(affectedPatterns, function(err) {
+							if (!err) {
+								// get NEW max averages after update
+								module.exports.getMaxAvgHighScores(function(err, newMaxAvgCatch, newMaxAvgTime) {
+									if (!err) {
+										// determine which users are affected by changes in the affected patterns
+										module.exports.affectedUsersByPattern(affectedPatterns, function(err, affectedUsers) {
+											if (!err) {
+												var patternsToUpdate, usersToUpdate;
+
+												// if max averages changed
+												if (newMaxAvgCatch != oldMaxAvgCatch || newMaxAvgTime != oldMaxAvgTime) {
+													patternsToUpdate = [];	// update ALL patterns
+													usersToUpdate = [];		// update ALL users
+												} else {
+													patternsToUpdate = affectedPatterns;	// only update affected patterns
+													usersToUpdate = affectedUsers;			// only update affected users
+												}
+
+												// update pattern difficulties appropriately & handle ripple effect
+												module.exports.handlePatternDifficultyChange(patternsToUpdate, usersToUpdate, cb);
+											} else {
+												cb(err);
+											}
+										});
+									} else {
+										cb(err);
+									}
+								});
+							} else {
+								cb(err);
+							}
+						});
+					} else {
+						cb(err);
+					}
+				});
+			} else {
+				cb(err);
+			}
+		});
 	}
 
 }

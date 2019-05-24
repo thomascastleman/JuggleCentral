@@ -65,76 +65,14 @@ module.exports = {
 	removeUser: function(uid, cb) {
 		// ensure positive user UID exists
 		if (uid && uid > 0) {
-			// determine which patterns this user competed in
+			// determine which patterns this user competed in (needs to be queried before removal of user's records)
 			ranking.affectedPatternsByUser([uid], function(err, affectedPatterns) {
 				if (!err) {
 					// remove user and all of their records
 					con.query('DELETE FROM users WHERE uid = ?;', [uid], function(err) {
 						if (!err) {
-							// update record scores / local ranks in patterns in which this user competed
-							ranking.updateRecordScoresAndLocalRanks(affectedPatterns, function(err) {
-								if (!err) {
-									// get the current max averages (before updating averages to reflect user deletion)
-									ranking.getMaxAvgHighScores(function(err, maxAvgCatch, maxAvgTime) {
-										if (!err) {
-											// recalculate and store average high scores for affected patterns now that records have been deleted
-											ranking.updateAvgHighScores(affectedPatterns, function(err) {
-												if (!err) {
-													// get the (potentially) updated max averages
-													ranking.getMaxAvgHighScores(function(err, newMaxAvgCatch, newMaxAvgTime) {
-														if (!err) {
-															// determine which users are affected by changes in the affected patterns
-															ranking.affectedUsersByPattern(affectedPatterns, function(err, affectedUsers) {
-																if (!err) {
-																	var patternsToUpdate, usersToUpdate;
-
-																	// if max averages changed
-																	if (newMaxAvgCatch != maxAvgCatch || newMaxAvgTime != maxAvgTime) {
-																		patternsToUpdate = [];	// update ALL patterns
-																		usersToUpdate = [];		// update ALL users
-																	} else {
-																		patternsToUpdate = affectedPatterns;	// only update affected patterns
-																		usersToUpdate = affectedUsers;			// only update affected users
-																	}
-
-																	// update pattern difficulties appropriately
-																	ranking.calcPatternDifficulties(patternsToUpdate, function(err) {
-																		if (!err) {
-																			// update user scores appropriately
-																			ranking.calcUserScores(usersToUpdate, function(err) {
-																				if (!err) {
-																					// update global rankings to reflect changes in user scores
-																					ranking.updateGlobalRanks(function(err) {
-																						cb(err);
-																					});
-																				} else {
-																					cb(err);
-																				}
-																			});
-																		} else {
-																			cb(err);
-																		}
-																	});
-																} else {
-																	cb(err);
-																}
-															});
-														} else {
-															cb(err);
-														}
-													});
-												} else {
-													cb(err);
-												}
-											});
-										} else {
-											cb(err);
-										}
-									});
-								} else {
-									cb(err);
-								}
-							});
+							// keep all affected pattern data up to date
+							ranking.maintainPatternInfo(affectedPatterns, cb);
 						} else {
 							cb(err);
 						}
@@ -181,30 +119,15 @@ module.exports = {
 						if (!err) {
 							// if change in pattern's number of objects
 							if (oldNumObjects != numObjects) {
-								// recalculate this pattern's difficulty
-								ranking.calcPatternDifficulties([uid], function(err) {
+								// get all users whose scores are affected by this change in difficulty
+								ranking.affectedUsersByPattern([uid], function(err, affectedUsers) {
 									if (!err) {
-										// get all users whose scores are affected by this change in difficulty
-										ranking.affectedUsersByPattern([uid], function(err, affectedUsers) {
-											if (!err) {
-												// recalculate user scores for these users, now with new pattern difficulty
-												ranking.calcUserScores(affectedUsers, function(err) {
-													if (!err) {
-														// update the global rankings accordingly
-														ranking.updateGlobalRanks(cb);
-													} else {
-														cb(err);
-													}
-												});
-											} else {
-												cb(err);
-											}
-										});
+										// handle change in pattern difficulty & manage ripple effect
+										ranking.handlePatternDifficultyChange([uid], affectedUsers, cb);
 									} else {
 										cb(err);
 									}
 								});
-
 							// no difficulty / scoring updating required
 							} else {
 								cb(err);
@@ -248,12 +171,21 @@ module.exports = {
 	},
 
 	// adds a record linking a given user and pattern
-	addRecord: function(userUID, patternUID, catches, duration, timeRecorded, video, cb) {
-		/*
-			Ensure only ONE of catches and duration is defined (error otherwise)
-			Determine pattern UID of pattern in which record was added or removed.
-			handleRecordChange([patternUID])
-		*/
+	addRecord: function(userUID, patternUID, catches, duration, video, cb) {
+		// ensure required fields exist (and that only one of catches or duration is defined)
+		if (userUID && userUID > 0 && patternUID && patternUID > 0 && (catches || duration) && !(catches && duration)) {
+			// add new record with given fields
+			con.query('INSERT INTO records (userUID, patternUID, catches, duration, video, timeRecorded) VALUES (?, ?, ?, ?, ?, NOW());', [userUID, patternUID, catches, duration, video], function(err) {
+				if (!err) {
+					// handle the change in records appropriately
+					ranking.handleRecordChange(userUID, [patternUID], cb);
+				} else {
+					cb(err);
+				}
+			});
+		} else {
+			cb("Failed to add new record as not all required fields (user UID, pattern UID, catch score or time score) were defined.");
+		}
 	},
 
 	// edit the contents of one of your records
@@ -277,38 +209,9 @@ module.exports = {
 	// remove an existing record by UID
 	removeRecord: function(uid, cb) {
 		/*
-			Determine pattern UID of pattern in which record was added or removed.
+			Determine pattern UID of pattern of the record to remove
 			handleRecordChange([patternUID])
 		*/
 	},
-
-	// used to handle a new / edited / removed record by updating scores & ranks as needed
-	handleRecordChange: function(affectedPatterns) {
-		/*
-			Maintain personal bests in affectedPatterns for this user. (maintainPB)
-
-			Recalc record scores in affectedPatterns, use to update ranks in affectedPatterns. (updateRecordScoresAndLocalRanks)
-
-			Find the current maxes for avg high score across all patterns (getMaxAvgHighScores)
-
-			Recalculate avg high score in affectedPatterns and store in DB. (updateAvgHighScores)
-
-			Find newMax's after this pattern's average recalculations (getMaxAvgHighScores)
-
-				If either max changed
-
-					Recalc all pattern difficulties. (calcPatternDifficulties on all)
-
-					Recalc all user scores (calcUserScores on all)
-
-				If both maxes DID NOT change
-
-					Recalc difficulty for affectedPatterns (calcPatternDifficulties for just this one)
-
-					Recalc user scores for users competing in this pattern (affectedUsersByPattern on affectedPatterns, and calcUserScores for subset)
-
-				Recalculate global rank for everyone. (updateGlobalRanks)
-		*/
-	}
 
 }
