@@ -168,12 +168,60 @@ module.exports = {
 	},
 
 	// edits all fields of an existing pattern
-	editPattern: function(uid, name, description, numObjects, gif, cb) {
-		/*
-			If numObjects changed: (this changes difficulty of this pattern & therefore the user score of every competing user)
-				Recalc THIS pattern's difficulty (everything you need is stored) (calcPatternDifficulties for just this pattern)
-				Recalc user score of every user competing in this pattern, and update global rank (affectedUsersByPattern, and calcUserScores for subset, and updateGlobalRanks)
-		*/
+	editPattern: function(uid, name, numObjects, description, gif, cb) {
+		// ensure required fields are defined
+		if (uid && uid > 0 && name && numObjects) {
+			// get old number of objects to determine change
+			con.query('SELECT numObjects FROM patterns WHERE uid = ?;', [uid], function(err, rows) {
+				if (!err && rows !== undefined && rows.length > 0) {
+					var oldNumObjects = rows[0].numObjects;
+
+					// apply updates in patterns table
+					con.query('UPDATE patterns SET name = ?, numObjects = ?, description = ?, GIF = ? WHERE uid = ?;', [name, numObjects, description, gif, uid], function(err) {
+						if (!err) {
+							// if change in pattern's number of objects
+							if (oldNumObjects != numObjects) {
+								// recalculate this pattern's difficulty
+								ranking.calcPatternDifficulties([uid], function(err) {
+									if (!err) {
+										// get all users whose scores are affected by this change in difficulty
+										ranking.affectedUsersByPattern([uid], function(err, affectedUsers) {
+											if (!err) {
+												// recalculate user scores for these users, now with new pattern difficulty
+												ranking.calcUserScores(affectedUsers, function(err) {
+													if (!err) {
+														// update the global rankings accordingly
+														ranking.updateGlobalRanks(cb);
+													} else {
+														cb(err);
+													}
+												});
+											} else {
+												cb(err);
+											}
+										});
+									} else {
+										cb(err);
+									}
+								});
+
+							// no difficulty / scoring updating required
+							} else {
+								cb(err);
+							}
+
+						} else {
+							cb(err);
+						}
+					});
+
+				} else {
+					cb(err || "Unable to determine change in pattern's number of objects.");
+				}
+			});
+		} else {
+			cb("Unable to edit pattern as not all required fields (UID, name, number of objects) were present.");
+		}
 	},
 
 	// deletes an existing pattern and all associated records
