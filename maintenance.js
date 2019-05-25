@@ -208,10 +208,29 @@ module.exports = {
 
 	// remove an existing record by UID
 	removeRecord: function(uid, cb) {
-		/*
-			Determine pattern UID of pattern of the record to remove
-			handleRecordChange([patternUID])
-		*/
+		// get this record's associated pattern and user
+		con.query('SELECT userUID, patternUID FROM records WHERE uid = ?;', [uid], function(err, rows) {
+			if (!err && rows !== undefined && rows.length > 0) {
+				var userUID = rows[0].userUID;
+				var patternUID = rows[0].patternUID;
+
+				// remove the record
+				con.query('DELETE FROM records WHERE uid = ?;', [uid], function(err) {
+					if (!err) {
+						// handle the change in record in the affected pattern / user appropriately
+						ranking.handleRecordChange(userUID, [patternUID], cb);
+					} else {
+						cb(err);
+					}
+				});
+			} else {
+				cb(err);
+			}
+		});
 	},
 
 }
+
+// module.exports.editRecord(, function(err) {
+// 	console.log(err);
+// });
