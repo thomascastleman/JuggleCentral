@@ -5,7 +5,6 @@
 
 var getters = require('./getters.js');
 var maintenance = require('./maintenance.js');
-var rankings = require('./rankings.js');
 var search = require('./search.js');
 var sys = require('./settings.js');
 
@@ -53,6 +52,60 @@ module.exports = {
 			res.render('user.html', render);
 		});
 
+		/* --------------- Administrator Endpoints --------------- */
+
+		// admin request to add a new user
+		app.post('/addUser', auth.isAdminPOST, function(req, res) {
+
+		});
+
+		// admin request to change admin status of a user
+		app.post('/changeAdminStatus', auth.isAdminPOST, function(req, res) {
+			
+		});
+
+		// admin request to remove an existing user
+		app.post('/removeUser', auth.isAdminPOST, function(req, res) {
+			
+		});
+
+		// admin request to add a new juggling pattern
+		app.post('/addPattern', auth.isAdminPOST, function(req, res) {
+			
+		});
+
+		// admin request to update an existing pattern
+		app.post('/editPattern', auth.isAdminPOST, function(req, res) {
+			
+		});
+
+		// admin request to remove an existing pattern
+		app.post('/removePattern', auth.isAdminPOST, function(req, res) {
+			
+		});
+
+
+		/* --------------- Regular User Endpoints --------------- */
+
+		// request to edit user
+		app.post('/editUser', auth.isAuthPOST, function(req, res) {
+			
+		});
+
+		// request to add a new record
+		app.post('/addRecord', auth.isAuthPOST, function(req, res) {
+			
+		});
+
+		// request to edit an existing record
+		app.post('/editRecord', auth.isAuthPOST, function(req, res) {
+			
+		});
+
+		// request to remove an existing record
+		app.post('/removeRecord', auth.isAuthPOST, function(req, res) {
+			
+		});
 	}
 
 }

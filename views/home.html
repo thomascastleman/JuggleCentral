@@ -16,7 +16,6 @@
 			<li><a href="/search">Browse Patterns</a></li>
 			<li><a href="/leaderboard">Leaderboard</a></li>
 			<div style="float:right">
-				<!-- <li id="authMessage"><a href="#">{{auth.message}}</a></li> -->
 				{{#auth.isAuthenticated}}
 				<li><a href="/user/{{auth.userUID}}">My Profile ({{auth.givenName}})</a></li>
 				<li><a href="/logout">Log Out <i class="fas fa-sign-out-alt"></i></a></li>
