@@ -190,20 +190,39 @@ module.exports = {
 
 	// edit the contents of one of your records
 	editRecord: function(uid, patternUID, catches, duration, video, cb) {
-		/*
-			IMPORTANT: patternUID, catches, duration,
-			non important: video
-			
-			Ensure only ONE of catches and duration is defined (error)
+		// ensure required fields exist (and that only one of catches or duration is defined)
+		if (uid && uid > 0 && patternUID && patternUID > 0 && (catches || duration) && !(catches && duration)) {
+			// determine the current pattern this record is linked to
+			con.query('SELECT userUID, patternUID FROM records WHERE uid = ?;', [uid], function(err, rows) {
+				if (!err && rows !== undefined && rows.length > 0) {
+					var userUID = rows[0].userUID;
+					var oldPatternUID = rows[0].patternUID, affectedPatterns;
 
-			If pattern changed:
-				affected patterns = [old patternUID, new patternUID]
-			otherwise:
-				affected patterns = [pattern UID]
+					// if pattern changed
+					if (oldPatternUID != patternUID) {
+						// both old and new pattern are affected
+						affectedPatterns = [oldPatternUID, patternUID];
+					} else {
+						// only one pattern is affected
+						affectedPatterns = [patternUID];
+					}
 
-			handleRecordChange(affectedPatterns)
-
-		*/
+					// apply the updates to this record
+					con.query('UPDATE records SET patternUID = ?, catches = ?, duration = ?, video = ? WHERE uid = ?;', [patternUID, catches, duration, video, uid], function(err) {
+						if (!err) {
+							// handle the change in record info for this user & affected patterns
+							ranking.handleRecordChange(userUID, affectedPatterns, cb);
+						} else {
+							cb(err);
+						}
+					});
+				} else {
+					cb(err || "Unable to get previous pattern information from record.");
+				}
+			});
+		} else {
+			cb("Failed to edit record as some of the required fields were invalid.");
+		}
 	},
 
 	// remove an existing record by UID
@@ -230,7 +249,3 @@ module.exports = {
 	},
 
 }
-
-// module.exports.editRecord(, function(err) {
-// 	console.log(err);
-// });
