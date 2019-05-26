@@ -3,6 +3,7 @@
 	All system routes
 */
 
+var auth = require('./auth.js');
 var getters = require('./getters.js');
 var maintenance = require('./maintenance.js');
 var search = require('./search.js');

@@ -48,8 +48,10 @@ module.exports = {
 
 	/*	Searches the patterns table, matching name & description against the given query. 
 		If numObjects given, filter to include only patterns with that number of objects. 
-		Empty query returns full table */
-	searchPatterns: function(query, numObjects, limit, cb) {
+		Empty query returns full table 
+		If orderBy given, use this to order the results that match against the query. 
+		OrderBy can be: 'DIFFICULTY', 'NUM_OBJECTS', 'POPULARITY', or null to order by relevance */
+	searchPatterns: function(query, numObjects, orderBy, limit, cb) {
 		// ensure limit exists and that numObjects is positive if given
 		if (!numObjects || numObjects > 0) {
 			// determine what to limit by, if anything
@@ -66,22 +68,76 @@ module.exports = {
 			if (limitQuery != "") args.push(limit);
 
 			// select all patterns that match against query
-			con.query('SELECT name, description, numObjects, GIF, difficulty, MATCH (name, description) AGAINST (? IN BOOLEAN MODE) AS termScore FROM patterns WHERE (MATCH (name, description) AGAINST (? IN BOOLEAN MODE) OR ? = "") AND (numObjects = ? OR ?) ORDER BY termScore DESC' + limitQuery + ';', args, function(err, patterns) {
+			con.query('SELECT uid, name, description, numObjects, GIF, difficulty, MATCH (name, description) AGAINST (? IN BOOLEAN MODE) AS termScore FROM patterns WHERE (MATCH (name, description) AGAINST (? IN BOOLEAN MODE) OR ? = "") AND (numObjects = ? OR ?) ORDER BY termScore DESC' + limitQuery + ';', args, function(err, patterns) {
 				if (!err && patterns !== undefined) {
-					// determine the maximum difficulty out of all patterns
-					con.query('SELECT MAX(difficulty) AS max FROM patterns;', function(err, rows) {
-						if (!err && rows !== undefined && rows.length > 0) {
-							var maxDiff = rows[0].max;
 
-							// scale all difficulties out of 10
-							for (var i = 0; i < patterns.length; i++) {
-								patterns[i].difficulty = 10 * patterns[i].difficulty / maxDiff;
+					// get number of users that participate in each pattern
+					con.query('SELECT patternUID, COUNT(*) AS numUsers FROM (SELECT * FROM records GROUP BY userUID, patternUID ORDER BY patternUID) AS x GROUP BY patternUID;', function(err, rows) {
+						if (!err && rows !== undefined) {
+							var uidToPopularity = {};
+
+							// map pattern UID to its number of participants
+							for (var i = 0; i < rows.length; i++) {
+								uidToPopularity[rows[i].patternUID] = rows[i].numUsers;
 							}
 
-							// callback on patterns array
-							cb(err, patterns);
+							// determine the maximum difficulty out of all patterns
+							con.query('SELECT MAX(difficulty) AS max FROM patterns;', function(err, rows) {
+								if (!err && rows !== undefined && rows.length > 0) {
+									var maxDiff = rows[0].max;
+
+									for (var i = 0; i < patterns.length; i++) {
+										// scale all difficulties out of 10 (human-readable)
+										patterns[i].difficulty = 10 * patterns[i].difficulty / maxDiff;
+
+										// round off difficulty
+										patterns[i].difficulty = patterns[i].difficulty.toFixed(2);
+
+										// add number of users to pattern object
+										patterns[i].numUsers = uidToPopularity[patterns[i].uid];
+
+										// default undefined values to no participants
+										if (patterns[i].numUsers == undefined) patterns[i].numUsers = 0;
+									}
+
+									// comparator function used to sort results
+									var compare;
+
+									// if a specific ordering requested
+									if (orderBy) {
+										switch (orderBy) {
+											// compare on the basis of pattern difficulty
+											case 'DIFFICULTY':
+												compare = function(a, b) {
+													return b.difficulty - a.difficulty;
+												}
+												break;
+											// compare on the basis of number of objects
+											case 'NUM_OBJECTS':
+												compare = function(a, b) {
+													return b.numObjects - a.numObjects;
+												}
+												break;
+											// compare on the basis of number of participants
+											case 'POPULARITY':
+												compare = function(a, b) {
+													return b.numUsers - a.numUsers;
+												}
+												break;
+										}
+
+										// sort with the specified comparator
+										patterns.sort(compare);
+									}
+
+									// callback on patterns array
+									cb(err, patterns);
+								} else {
+									cb(err || "The system failed to determine the most difficult pattern.");
+								}
+							});
 						} else {
-							cb(err);
+							cb(err || "The system was unable to determine each pattern's popularity");
 						}
 					});
 				} else {
