@@ -21,7 +21,7 @@ module.exports = {
 		if (limitQuery != "") args.push(limit);
 
 		// select all users who match against query
-		con.query('SELECT name, bio, userRank, MATCH (name) AGAINST (? IN BOOLEAN MODE) AS termScore FROM users WHERE MATCH (name) AGAINST (? IN BOOLEAN MODE) OR ? = "" ORDER BY termScore DESC' + limitQuery + ';', args, function(err, rows) {
+		con.query('SELECT name, bio, userRank, score, MATCH (name) AGAINST (? IN BOOLEAN MODE) AS termScore FROM users WHERE MATCH (name) AGAINST (? IN BOOLEAN MODE) OR ? = "" ORDER BY termScore DESC' + limitQuery + ';', args, function(err, rows) {
 			if (!err && rows !== undefined) {
 				// if a specific order requested
 				if (orderBy) {
