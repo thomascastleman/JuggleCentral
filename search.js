@@ -9,7 +9,7 @@ module.exports = {
 
 	/*	Search the users table, matching name against given query.
 		Empty query returns full table */
-	searchUsers: function(query, limit, cb) {
+	searchUsers: function(query, orderBy, limit, cb) {
 		// determine what to limit by, if anything
 		var limitQuery = (limit && limit > 0) ? " LIMIT ?" : "";
 
@@ -23,6 +23,22 @@ module.exports = {
 		// select all users who match against query
 		con.query('SELECT name, bio, userRank, MATCH (name) AGAINST (? IN BOOLEAN MODE) AS termScore FROM users WHERE MATCH (name) AGAINST (? IN BOOLEAN MODE) OR ? = "" ORDER BY termScore DESC' + limitQuery + ';', args, function(err, rows) {
 			if (!err && rows !== undefined) {
+				// if a specific order requested
+				if (orderBy) {
+					switch (orderBy) {
+						// compare on the basis of user rank
+						case 'RANK':
+							compare = function(a, b) {
+								return a.userRank - b.userRank;
+							}
+							break;
+					}
+
+					// sort with the specified comparator
+					rows.sort(compare);
+				}
+
+				// callback on query results
 				cb(err, rows);
 			} else {
 				cb(err || "The system was unable to retrieve user search results.");

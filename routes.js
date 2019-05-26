@@ -13,6 +13,8 @@ module.exports = {
 
 	init: function(app) {
 
+		/* --------------- Unrestricted Endpoints --------------- */
+
 		// render home page
 		app.get('/', function(req, res) {
 			// get default render object
@@ -35,6 +37,28 @@ module.exports = {
 			var render = defRender(req);
 
 			res.render('search.html', render);
+		});
+
+		// render search page for a specific query
+		app.post('/search', function(req, res) {
+			var render = defRender(req);
+
+			/*
+				sample for a pattern search query:
+				req.body = {
+					query: ''
+					searchPatterns: true
+					numObjectsFilter: 4
+					orderBy: 'DIFFICULTY'
+				}
+
+				sample for a user search query:
+				req.body = {
+					query: ''
+					searchPatterns: false
+					orderBy: 'RANK'
+				}
+			*/
 		});
 
 		// render pattern page
