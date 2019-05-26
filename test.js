@@ -7,7 +7,8 @@ var moment = require('moment');
 var random = {
 	names: ["Alexandra Wiley","Lizbeth Flores","Tara Wilkinson","Jolie Morgan","Karlee Mccormick","Brisa Trujillo","Makenzie Sellers","Anabelle Horton","Ramiro Pratt","Callie Gibson","Rebecca Henderson","Naomi Hill","Jayce Benton","Ramon Payne","Giovani Ellison","Libby Gonzalez","Reagan Moran","Abdiel Santos","Kyler Alvarez","Rayne Woodward","Teagan Osborn","Hana Cobb","Pablo Mcfarland","Andy Winters","Marley Davies","Arely Berger","Kianna Boyle","Rashad Crane","Mary Foley","Yaretzi Schultz","Anderson Mora","Bernard Mcknight","Adeline Potts","Angelica Robbins","Salvador Ballard","Tate Franklin","Emerson Myers","Samuel Sexton","Aniyah Maxwell","Tatum Gould","Justine Baxter","Corbin Giles","Jamar Allison","Jaidyn Kane","Nico Graves","Lilianna Hernandez","Breanna Pratt","Zoe Branch","Marianna Huffman","Davin Lopez","Henry Hebert","Anabella George","Darion Fritz","Demetrius Mckinney","Madelynn Stewart","Jaylene Summers","Kayla Cline","Krystal Schaefer","Rogelio Keller","Garrett West","Alyssa Mcconnell","Evan Chang","Alejandro Gonzales","Tomas Barnes","Eve Hubbard","Asher Mccall","Louis Hess","Avah Knox","Gustavo Munoz","Kai Yates","Meadow Hodge","Beau Byrd","Cristina Booker","Angelina Church","Duncan Lucas","Ari Beard","Kole Blevins","Adison Mason","Jessie Shelton","Troy Franco","Livia Vincent","Preston Nunez","Susan Johnston","Harper Brady","Scarlet Moses","Kale Garrison","Belen Blake","Jerimiah Robles","Damaris Berry","Mekhi Faulkner","Ainsley Mata","Katrina Gibbs","Lucian Hudson","Jeramiah Cuevas","Brady Thornton","Vincent Ball","Makai Jefferson","Micheal Mccann","Fiona Tyler","Bo Smith"],
 	emails: ["ahuillet@live.com","larry@comcast.net","melnik@outlook.com","emmanuel@verizon.net","calin@att.net","guialbu@outlook.com","meder@live.com","wildfire@gmail.com","ralamosm@att.net","daveed@gmail.com","schwaang@mac.com","ilial@optonline.net","glenz@gmail.com","munson@me.com","dougj@gmail.com","ubergeeb@outlook.com","amimojo@msn.com","keijser@att.net","dawnsong@msn.com","ryanshaw@optonline.net","dowdy@optonline.net","telbij@live.com","heine@aol.com","kjohnson@gmail.com","ilyaz@gmail.com","evilopie@msn.com","rcwil@gmail.com","chaki@aol.com","daveewart@icloud.com","subir@icloud.com","mbalazin@att.net","credmond@gmail.com","gordonjcp@optonline.net","mhanoh@mac.com","maikelnai@me.com","kaiser@sbcglobal.net","goresky@me.com","emcleod@optonline.net","kdawson@yahoo.com","jespley@verizon.net","henkp@optonline.net","kwilliams@hotmail.com","pdbaby@hotmail.com","squirrel@msn.com","chlim@live.com","bartak@me.com","fatelk@aol.com","oracle@sbcglobal.net","suresh@live.com","techie@yahoo.ca","cumarana@live.com","bigmauler@optonline.net","gtewari@outlook.com","jshirley@verizon.net","aardo@verizon.net","hachi@icloud.com","rnewman@outlook.com","sburke@optonline.net","brainless@me.com","shaffei@optonline.net","kspiteri@comcast.net","mgreen@sbcglobal.net","uncle@me.com","ideguy@comcast.net","seasweb@yahoo.ca","roamer@optonline.net","cremonini@msn.com","nelson@icloud.com","zeitlin@icloud.com","bachmann@optonline.net","itstatus@live.com","tskirvin@att.net","dawnsong@hotmail.com","jlbaumga@yahoo.ca","sartak@verizon.net","boein@yahoo.com","ehood@optonline.net","rbarreira@verizon.net","sburke@yahoo.ca","ovprit@hotmail.com","iapetus@icloud.com","fraser@gmail.com","panolex@optonline.net","sarahs@comcast.net","jugalator@outlook.com","jschauma@sbcglobal.net","aprakash@optonline.net","sacraver@mac.com","william@optonline.net","agapow@att.net","lamprecht@icloud.com","kohlis@live.com","horrocks@icloud.com","mfburgo@aol.com","jrkorson@comcast.net","leocharre@aol.com","nwiger@msn.com","ateniese@msn.com","sravani@att.net","trieuvan@yahoo.com"],
-	patterns: ["Alex","Al's Slide","Arrow of Asai","Backcrosses","Boston Mess","Cherry Picker","Boston Shuffle","Burke's Slam","Peter's Shuffle","Box","Bizarre Box","Broken Box","Burst Box","Extended Box","Gilligan's Box","Karas' Box","Luke's Shuffle","N-Box","Inverted Box","Penman's Box","Swap Box","Switched Box","Threaded Box","True Box","Underarm Box","Burke's Barrage","Takeouts","Cascade","Reverse Cascade","High-Low Var.","Chops","Reverse Chops","Columns","Box Variation","Crossunder","Infinity","Matt's Mess","Overthrow Var.","Rainbow Cross","Reverse Crossunder","Reverse Infinity","Shower Variation","Shuffle-Switch","Crossed-Arm Cascade","Reverse Variation","David's Dilemma","Fake Columns","Yo-Yo","Oy-Oy","Factory","Crossed-Arm Var.","Relf's Factory","Reverse Factory","Zebra Factory","Flying Disco Drop","Follow","Forklift","Frantic Cascade","Frostbite","Georgian Scuffle","Symmetric Var.","Georgian Shuffle","Buffalo Shuffle","Davenport Shuffle","Singapore Shuffle","Symmetric Var.","Grace","Half-Shower","Hands of Time","Harrison's Hang","Icelandic Shuffle","Inverted Shower","Jeanne","Juggler's Tennis","Kato's Crux","King of Hearts","Kingston Shuffle","Kraken","Levels","Luke's Lobotomy","Maka's Mess","Mangham's Mangle","Marden's Marvel","Mike's Mess","Mills Mess","441 Mills Mess","531 Mills Mess","Charley","Fake Mess","Flipped Mess","Flo's Mess","Half-Mess","Reverse Mills Mess","Mills Mess Shower","Nelson's Nemesis","Olas","Compressed Olas","Orka's Mess","Pendulum Drop","Penman's Pandemonium","Relf's Revenge","Relf's Revenge 6","Relf's Rubensteins","Ripley's Rainbow","Rolf's Wave","Romeo's Revenge","Rubenstein's Revenge","Sandbox Shuffle","Frances","Shower","Broken Shower","Crossed-Arm Shower","High-Low Var.","Reverse Crossed-Arm Shower","Swap Variation","Underarm Var.","Shower Cascade","Shuffle","Low Shuffle","Shuffler's Mess","Snake","Statue of Liberty","Takearound","Three In One","Tom's Trick","Triazzle","Truffle Shuffle","Weave","Orinoco Flow","Windmill","Chop Shower","423","The W","441 (Half-Box)","Reverse 441","531"]
+	patterns: ["Alex","Al's Slide","Arrow of Asai","Backcrosses","Boston Mess","Cherry Picker","Boston Shuffle","Burke's Slam","Peter's Shuffle","Box","Bizarre Box","Broken Box","Burst Box","Extended Box","Gilligan's Box","Karas' Box","Luke's Shuffle","N-Box","Inverted Box","Penman's Box","Swap Box","Switched Box","Threaded Box","True Box","Underarm Box","Burke's Barrage","Takeouts","Cascade","Reverse Cascade","High-Low Var.","Chops","Reverse Chops","Columns","Box Variation","Crossunder","Infinity","Matt's Mess","Overthrow Var.","Rainbow Cross","Reverse Crossunder","Reverse Infinity","Shower Variation","Shuffle-Switch","Crossed-Arm Cascade","Reverse Variation","David's Dilemma","Fake Columns","Yo-Yo","Oy-Oy","Factory","Crossed-Arm Var.","Relf's Factory","Reverse Factory","Zebra Factory","Flying Disco Drop","Follow","Forklift","Frantic Cascade","Frostbite","Georgian Scuffle","Symmetric Var.","Georgian Shuffle","Buffalo Shuffle","Davenport Shuffle","Singapore Shuffle","Symmetric Var.","Grace","Half-Shower","Hands of Time","Harrison's Hang","Icelandic Shuffle","Inverted Shower","Jeanne","Juggler's Tennis","Kato's Crux","King of Hearts","Kingston Shuffle","Kraken","Levels","Luke's Lobotomy","Maka's Mess","Mangham's Mangle","Marden's Marvel","Mike's Mess","Mills Mess","441 Mills Mess","531 Mills Mess","Charley","Fake Mess","Flipped Mess","Flo's Mess","Half-Mess","Reverse Mills Mess","Mills Mess Shower","Nelson's Nemesis","Olas","Compressed Olas","Orka's Mess","Pendulum Drop","Penman's Pandemonium","Relf's Revenge","Relf's Revenge 6","Relf's Rubensteins","Ripley's Rainbow","Rolf's Wave","Romeo's Revenge","Rubenstein's Revenge","Sandbox Shuffle","Frances","Shower","Broken Shower","Crossed-Arm Shower","High-Low Var.","Reverse Crossed-Arm Shower","Swap Variation","Underarm Var.","Shower Cascade","Shuffle","Low Shuffle","Shuffler's Mess","Snake","Statue of Liberty","Takearound","Three In One","Tom's Trick","Triazzle","Truffle Shuffle","Weave","Orinoco Flow","Windmill","Chop Shower","423","The W","441 (Half-Box)","Reverse 441","531"],
+	gifs: ["https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/3-ball_cascade_movie.gif/100px-3-ball_cascade_movie.gif", "https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Douche3b.gif/100px-Douche3b.gif", "https://vignette.wikia.nocookie.net/juggle/images/4/41/51_200.gif/revision/latest?cb=20120610183333", "https://vignette.wikia.nocookie.net/juggle/images/7/7e/40_out_200.gif/revision/latest?cb=20120609011200", "https://vignette.wikia.nocookie.net/juggle/images/e/e5/3_rev_200.gif/revision/latest?cb=20120708181911", "https://vignette.wikia.nocookie.net/juggle/images/3/33/44_sync_rev_200.gif/revision/latest?cb=20120708183841", "https://vignette.wikia.nocookie.net/juggle/images/8/8c/5O3I_200.gif/revision/latest?cb=20120612192808", "https://vignette.wikia.nocookie.net/juggle/images/5/5f/3O3I_200.gif/revision/latest?cb=20120612192529"]
 };
 
 function removeDup(a) {
@@ -48,6 +49,12 @@ if (NUM_PATTERNS > random.patterns.length) throw new Error("Too many patterns re
 function randomTime() {
 	return moment().subtract(Math.floor(Math.random() * 12), 'months').subtract(Math.floor(Math.random() * 30), 'days').subtract(Math.floor(Math.random() * 30), 'hours').subtract(Math.floor(Math.random() * 30), 'minutes').format('YYYY-MM-DD HH:mm:ss');
 }
+
+// get a random actual juggling pattern GIF
+function randomGIF() {
+	return random.gifs[Math.floor(Math.random() * random.gifs.length)];
+}
+
 // generate a list of random users
 function generateUsers() {
 	var possible = [];
@@ -62,10 +69,13 @@ function generateUsers() {
 		// choose random index in possible indices
 		var rand = Math.floor(Math.random() * possible.length);
 
+		var name = random.names[possible[rand]];
+
 		// add new random user [name, email, bio, isAdmin]
 		users.push([
 			randomTime(),
-			random.names[possible[rand]],
+			name,
+			name,
 			random.emails[possible[rand]],
 			Math.random() < P_BIO ? casual.sentence : null,
 			i < NUM_ADMINS
@@ -98,7 +108,7 @@ function generatePatterns() {
 			random.patterns[possible[rand]],
 			Math.random() < P_DESCRIP ? casual.sentence : null,
 			Math.floor(Math.random() * 13) + 2,
-			Math.random() < P_GIF ? casual.url : null
+			Math.random() < P_GIF ? randomGIF() : null
 		]);
 
 		// remove index as possibility
@@ -209,7 +219,7 @@ var patterns = generatePatterns();
 
 // insert generated profiles
 process.stdout.write('Adding ' + (NUM_USERS + NUM_ADMINS) + ' random user profiles... ');
-con.query('INSERT INTO users (timeCreated, name, email, bio, isAdmin) VALUES ?;', [users], function(err) {
+con.query('INSERT INTO users (timeCreated, realName, name, email, bio, isAdmin) VALUES ?;', [users], function(err) {
 	console.log("Done.");
 	if (err) throw err;
 
