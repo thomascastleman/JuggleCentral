@@ -14,19 +14,27 @@ module.exports = {
 		if(name && email && isAdmin != undefined) {
 			// get the score and user rank of the worst ranked existing user
 			con.query('SELECT score, userRank FROM users WHERE userRank = (SELECT MAX(userRank) FROM users) LIMIT 1;', function(err, rows) {
-				if (!err && rows !== undefined && rows.length > 0) {
-					var lowestRank = rows[0].userRank, lowestScore = rows[0].score, newUserRank;
+				if (!err && rows !== undefined) {
+					var newUserRank;
 
-					// if lowest ranked user ALSO has 0 score, use same rank for this user
-					if (lowestScore == 0) {
-						newUserRank = lowestRank;
+					// if there is a lowest ranked user
+					if (rows.length > 0) {
+						var lowestRank = rows[0].userRank, lowestScore = rows[0].score;
+
+						// if lowest ranked user ALSO has 0 score, use same rank for this user
+						if (lowestScore == 0) {
+							newUserRank = lowestRank;
+						} else {
+							// if new user has worse score than lowest ranked user, use an even lower rank
+							newUserRank = lowestRank + 1;
+						}
 					} else {
-						// if new user has worse score than lowest ranked user, use an even lower rank
-						newUserRank = lowestRank + 1;
+						// if no existing users, default to rank 1
+						newUserRank = 1;
 					}
 
 					// insert user info into the database, and select the generated profile
-					con.query('INSERT INTO users (timeCreated, userRank, name, email, bio, isAdmin) VALUES (NOW(), ?, ?, ?, ?, ?); SELECT * FROM users WHERE uid = LAST_INSERT_ID();', [newUserRank, name, email, bio, isAdmin], function(err, rows) {
+					con.query('INSERT INTO users (timeCreated, userRank, realName, name, email, bio, isAdmin) VALUES (NOW(), ?, ?, ?, ?, ?, ?); SELECT * FROM users WHERE uid = LAST_INSERT_ID();', [newUserRank, name, name, email, bio, isAdmin], function(err, rows) {
 						if (!err && rows !== undefined && rows.length > 1 && rows[1].length > 0) {
 							// callback on new user's profile
 							cb(err, rows[1][0]);
@@ -48,11 +56,11 @@ module.exports = {
 
 	/*	Edit a user's bio or isAdmin status
 		If either argument null, do not update that field. */
-	editUser: function(uid, bio, isAdmin, cb) {
-		// ensure user is identified
-		if (uid && uid > 0) {
+	editUser: function(uid, name, bio, isAdmin, cb) {
+		// ensure user is identified by UID (and if name offered, not empty)
+		if (uid && uid > 0 && (!name || name != '')) {
 			// change the user's profile
-			con.query('UPDATE users SET bio = CASE WHEN ? IS NOT NULL THEN ? ELSE bio END, isAdmin = CASE WHEN ? IS NOT NULL THEN ? ELSE isAdmin END WHERE uid = ?;', [bio, bio, isAdmin, isAdmin, uid], function(err){
+			con.query('UPDATE users SET name = CASE WHEN ? IS NOT NULL THEN ? ELSE name END, bio = CASE WHEN ? IS NOT NULL THEN ? ELSE bio END, isAdmin = CASE WHEN ? IS NOT NULL THEN ? ELSE isAdmin END WHERE uid = ?;', [name, name, bio, bio, isAdmin, isAdmin, uid], function(err){
 				// callback on the sql error
 				cb(err);
 			});

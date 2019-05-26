@@ -8,6 +8,7 @@ USE juggling;
 CREATE TABLE users (
 	uid INT NOT NULL AUTO_INCREMENT,
 	timeCreated DATETIME,
+	realName VARCHAR(64),
 	name VARCHAR(64),
 	email VARCHAR(64) UNIQUE,
 	bio TEXT,
