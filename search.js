@@ -21,10 +21,12 @@ module.exports = {
 		if (limitQuery != "") args.push(limit);
 
 		// select all users who match against query
-		con.query('SELECT name, bio, userRank, score, MATCH (name) AGAINST (? IN BOOLEAN MODE) AS termScore FROM users WHERE MATCH (name) AGAINST (? IN BOOLEAN MODE) OR ? = "" ORDER BY termScore DESC' + limitQuery + ';', args, function(err, rows) {
+		con.query('SELECT uid, name, bio, userRank, score, MATCH (name) AGAINST (? IN BOOLEAN MODE) AS termScore FROM users WHERE MATCH (name) AGAINST (? IN BOOLEAN MODE) OR ? = "" ORDER BY termScore DESC' + limitQuery + ';', args, function(err, rows) {
 			if (!err && rows !== undefined) {
 				// if a specific order requested
 				if (orderBy) {
+					var compare;
+
 					switch (orderBy) {
 						// compare on the basis of user rank
 						case 'RANK':
@@ -36,6 +38,12 @@ module.exports = {
 
 					// sort with the specified comparator
 					rows.sort(compare);
+
+				// if no specified order and query empty, order by UID to push more recently created users to top
+				} else if (query == '') {
+					rows.sort(function(a, b) {
+						return b.uid - a.uid;
+					});
 				}
 
 				// callback on query results
@@ -144,6 +152,13 @@ module.exports = {
 
 										// sort with the specified comparator
 										patterns.sort(compare);
+
+									/*	if no specified order, and query empty (just browsing), order by UID to push more 
+										recently created patterns to top */
+									} else if (query == '') {
+										patterns.sort(function(a, b) {
+											return b.uid - a.uid;
+										});
 									}
 
 									// callback on patterns array

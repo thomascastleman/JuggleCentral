@@ -1,8 +1,84 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Search | JuggleCentral</title>
+	<title>Search results{{#nonEmptyQuery}} for '{{query}}'{{/nonEmptyQuery}} | JuggleCentral</title>
 </head>
 <body>
+	<!-- form for submitting search queries -->
+	<form action="/search" method="POST">
+		<input name="query" type="text" autocomplete="off" placeholder="Search" value="{{query}}"><button type="submit">Search</button><br>
+
+		<input type="radio" name="searchUsers" value="0" onchange="this.form.submit();" {{^searchUsers}}checked{{/searchUsers}}> Patterns ({{numPatternResults}})<br>
+		<input type="radio" name="searchUsers" value="1" onchange="this.form.submit();" {{#searchUsers}}checked{{/searchUsers}}> Jugglers ({{numUserResults}})<br>
+
+		{{^searchUsers}}
+			Show
+			<select name="numObjectsFilter" onchange="this.form.submit();">
+				<option>All</option>
+				{{#possibleNumObjects}}
+				<option value="{{numObjects}}" {{#selected}}selected{{/selected}}>{{numObjects}}-object</option>
+				{{/possibleNumObjects}}
+			</select>
+			patterns
+			<br>
+
+			Order by
+			<select name="orderBy" onchange="this.form.submit();">
+				<option>Relevance</option>
+				{{#orderByOptions}}
+				<option value="{{name}}" {{#selected}}selected{{/selected}}>{{friendlyName}}</option>
+				{{/orderByOptions}}
+			</select>
+		{{/searchUsers}}
+
+		{{#searchUsers}}
+			Order by
+			<select name="orderBy" onchange="this.form.submit();">
+				<option>Relevance</option>
+				{{#orderByOptions}}
+				<option value="{{name}}" {{#selected}}selected{{/selected}}>{{friendlyName}}</option>
+				{{/orderByOptions}}
+			</select>
+		{{/searchUsers}}
+	</form>
+
+	<!-- search results -->
+	<h1>{{#searchUsers}}Juggler{{/searchUsers}}{{^searchUsers}}Pattern{{/searchUsers}} Search Results{{#nonEmptyQuery}} for '{{query}}'{{/nonEmptyQuery}}</h1>
+	{{#resultsExist}}
+	<table>
+		{{#results}}
+			<tr>
+				{{#searchUsers}}
+				<td>
+					<a href="/user/{{uid}}">{{name}}</a>
+					<p>{{bio}}</p>
+				</td>
+				<td>
+					<span>Rank {{userRank}}</span>
+				</td>
+				<td>
+					<span>Score {{score}}</span>
+				</td>
+				{{/searchUsers}}
+
+				{{^searchUsers}}
+				<td>
+					<a href="/pattern/{{uid}}">{{name}}</a>
+					<p>{{description}}</p>
+				</td>
+				<td>
+					<span>Num Objects: {{numObjects}}</span>
+					<span>Difficulty: {{difficulty}} / 10</span>
+					<span>Participants: {{numUsers}}</span>
+				</td>
+				<td>{{#GIF}}<img src="{{GIF}}" width="90">{{/GIF}}</td>
+				{{/searchUsers}}
+			</tr>
+		{{/results}}
+	</table>
+	{{/resultsExist}}
+	{{^resultsExist}}
+	<p>No {{#searchUsers}}jugglers{{/searchUsers}}{{^searchUsers}}patterns{{/searchUsers}} found.</p>
+	{{/resultsExist}}
 </body>
 </html>

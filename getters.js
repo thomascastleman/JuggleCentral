@@ -214,6 +214,18 @@ module.exports = {
 		} else {
 			cb("Invalid limit to number of patterns to retrieve.");
 		}
+	},
+
+	// get all possible numbers of objects of existing patterns
+	getPossibleNumObjects: function(cb) {
+		// select numObjects and group by numObjects to remove duplicates
+		con.query('SELECT numObjects FROM patterns GROUP BY numObjects;', function(err, rows) {
+			if (!err && rows !== undefined && rows.length > 0) {
+				cb(err, rows);
+			} else {
+				cb(err || "Unable to retrieve all possible number of objects of existing patterns.");
+			}
+		});
 	}
 	
 }

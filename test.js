@@ -35,7 +35,7 @@ var NUM_USERS = 35;
 var NUM_ADMINS = 5;
 var NUM_PATTERNS = 30;
 
-var P_BIO = 0.4;
+var P_BIO = 0.7;
 var P_DESCRIP = 0.8;
 var P_GIF = 0.75;
 var P_VIDEO = 0.45;
