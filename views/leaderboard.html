@@ -4,5 +4,26 @@
 	<title>Global Leaderboard | JuggleCentral</title>
 </head>
 <body>
+	<h1>Leaderboard</h1>
+	{{#jugglersExist}}
+	<table>
+		<tr>
+			<th>Rank</th>
+			<th>Name</th>
+			<th>Score</th>
+		</tr>
+		{{#jugglers}}
+		<tr>
+			<td>{{userRank}}</td>
+			<td><a href="/user/{{uid}}">{{name}}</a></td>
+			<td>{{score}}</td>
+		</tr>
+		{{/jugglers}}
+	</table>
+	{{/jugglersExist}}
+
+	{{^jugglersExist}}
+	<p>There are no jugglers to rank.</p>
+	{{/jugglersExist}}
 </body>
 </html>

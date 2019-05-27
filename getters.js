@@ -15,7 +15,7 @@ module.exports = {
 			con.query('SELECT * FROM users WHERE uid = ?;', [uid], function(err, rows){
 				//if there isn't an error, callback the info.
 				if(!err && rows !== undefined && rows.length > 0){
-					cb(rows[0]);
+					cb(err, rows[0]);
 				}
 				else {
 					//callback an error
@@ -37,7 +37,7 @@ module.exports = {
 			con.query('SELECT * FROM patterns WHERE uid = ?;', [uid], function(err, rows){
 				// if there isn't an error, callback the info.
 				if(!err && rows !== undefined && rows.length > 0){
-					cb(rows[0]);
+					cb(err, rows[0]);
 				} 
 				else {
 					// callback error
@@ -95,7 +95,7 @@ module.exports = {
 					}
 
 					// callback on patterns array
-					cb(null, patterns);
+					cb(err, patterns);
 				} else {
 					// callback error
 					cb(err || "Unable to retrieve user's record information.");
@@ -138,7 +138,7 @@ module.exports = {
 					}
 
 					// callback on object with both catch- and time-based records
-					cb(null, records);
+					cb(err, records);
 				} else {
 					cb(err || "Unable to retrieve records for this pattern.");
 				}
@@ -155,7 +155,7 @@ module.exports = {
 		con.query('SELECT * FROM users ORDER BY userRank ASC;', function(err, rows) {
 			if (!err && rows !== undefined) {
 				// callback on user profiles
-				cb(rows);
+				cb(err, rows);
 			} else {
 				// callback on error
 				cb(err || "Unable to retrieve user data for global leaderboard.");

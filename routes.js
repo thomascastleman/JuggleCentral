@@ -28,7 +28,19 @@ module.exports = {
 			// get default render object
 			var render = defRender(req);
 
-			res.render('leaderboard.html', render);
+			// get all jugglers ordered by rank
+			getters.getGlobalLeaderboard(function(err, jugglers) {
+				if (!err) {
+					// store ranked jugglers in render object, register that they exist
+					render.jugglers = jugglers;
+					render.jugglersExist = jugglers.length > 0;
+
+					// render page with leaderboard
+					res.render('leaderboard.html', render);
+				} else {
+					error(res, "Failed to retrieve global leaderboard.");
+				}
+			});
 		});
 
 		// render search page
@@ -142,6 +154,11 @@ function defRender(req) {
 	}
 }
 
+// render an error message to user
+function error(res, message) {
+	res.render('error.html', { message: message });
+}
+
 // render the search page appropriately with results for the given query and parameters
 function renderSearchPage(req, res, render) {
 	// parse unrestricted filters / orders from form values into null values
@@ -219,11 +236,11 @@ function renderSearchPage(req, res, render) {
 								// render page
 								res.render('search.html', render);
 							} else {
-								res.render('error.html', { message: "Failed to find pattern search results for juggler query." });
+								error(res, "Failed to find pattern search results for juggler query.");
 							}
 						});
 					} else {
-						res.render('error.html', { message: "Failed to find juggler search results." });
+						error(res, "Failed to find juggler search results.");
 					}
 				});
 
@@ -248,16 +265,16 @@ function renderSearchPage(req, res, render) {
 								// render page
 								res.render('search.html', render);
 							} else {
-								res.render('error.html', { message: "Failed to find juggler search results for pattern query." });
+								error(res, "Failed to find juggler search results for pattern query.");
 							}
 						});
 					} else {
-						res.render('error.html', { message: "Failed to find pattern search results." });
+						error(res, "Failed to find pattern search results.");
 					}
 				});
 			}
 		} else {
-			res.render('error.html', { message: "Failed to retrieve pattern metadata for filtering" });
+			error(res, "Failed to retrieve pattern metadata for filtering");
 		}
 	});
 }

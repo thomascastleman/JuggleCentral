@@ -682,3 +682,5 @@ module.exports = {
 	}
 
 }
+
+// module.exports.maintainPatternInfo([],(err)=>{console.log(err);})
