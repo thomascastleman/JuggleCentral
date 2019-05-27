@@ -26,5 +26,37 @@
 			</div>
 		</ul>
 	</div>
+
+	{{#activityExists}}
+	<h1>Juggling Activity</h1>
+	<table>
+		{{#activity}}
+		<tr>
+			{{#isPBActivity}}
+			<p><a href="/user/{{userUID}}">{{userName}}</a> set a new personal best of {{#catches}}{{catches}} catches{{/catches}}{{#duration}}{{duration}}{{/duration}} for <a href="/pattern/{{patternUID}}">{{patternName}}</a> (Local Rank {{recordRank}})</p>
+			<p>{{relativeTime}}</p>
+			{{/isPBActivity}}
+
+			{{#isNewUserActivity}}
+			<p><a href="/user/{{uid}}">{{name}}</a> (Rank {{userRank}}) joined the {{jugglingClub}}</p>
+			<p>{{relativeTime}}</p>
+			{{/isNewUserActivity}}
+
+			{{#isNewPatternActivity}}
+			<p>{{jugglingClub}} created a new pattern:</p>
+			<p><a href="/pattern/{{uid}}">{{name}}</a></p>
+			{{#GIF}}<img src="{{GIF}}" width="150"/>{{/GIF}}
+			<p>{{relativeTime}}</p>
+			{{/isNewPatternActivity}}
+		</tr>
+		{{/activity}}
+	</table>
+	{{/activityExists}}
+
+	{{^activityExists}}
+	<h1>Welcome to JuggleCentral!</h1>
+	{{/activityExists}}
+
+
 </body>
 </html>

@@ -3,6 +3,7 @@
 	All system routes
 */
 
+var moment = require('moment');
 var auth = require('./auth.js');
 var getters = require('./getters.js');
 var maintenance = require('./maintenance.js');
@@ -20,7 +21,58 @@ module.exports = {
 			// get default render object
 			var render = defRender(req);
 
-			res.render('home.html', render);
+			// store club name in render object
+			render.jugglingClub = sys.jugglingClubName;
+
+			// get recent personal bests
+			getters.getRecentPersonalBests(sys.homeActivityLimit, function(err, PBs) {
+				if (!err) {
+					// get recently created user accounts
+					getters.getRecentNewUsers(sys.homeActivityLimit, function(err, newUsers) {
+						if (!err) {
+							// get recently created patterns
+							getters.getRecentNewPatterns(sys.homeActivityLimit, function(err, newPatterns) {
+								if (!err) {
+									// add all recent activity into one array
+									render.activity = PBs.concat(newUsers).concat(newPatterns);
+
+									for (var i = 0; i < render.activity.length; i++) {
+										var a = render.activity[i];
+										// parse time created into moment object for comparison
+										a.timeCreated = moment(a.timeCreated);
+
+										// get relative time as string (ie 30 min ago)
+										a.relativeTime = a.timeCreated.fromNow();
+									}
+
+									if (render.activity.length > 0) {
+										// sort by date of occurrence
+										render.activity.sort(function(a, b) {
+											return b.timeCreated.isBefore(a.timeCreated) ? -1 : 1;
+										});
+
+										// register that there is activity to show
+										render.activityExists = true;
+									}
+
+									// limit size of results by parameter in settings.js
+									render.activity = render.activity.slice(0, sys.homeActivityLimit);
+
+									// render home page with activity notifications
+									res.render('home.html', render);
+
+								} else {
+									error(res, "Failed to gather recently created pattern information.");
+								}
+							});
+						} else {
+							error(res, "Failed to gather recently created user account information.");
+						}
+					});
+				} else {
+					error(res, "Failed to gather recent personal bests information.");
+				}
+			});
 		});
 
 		// render leaderboard

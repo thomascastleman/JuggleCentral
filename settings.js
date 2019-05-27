@@ -12,5 +12,8 @@ module.exports = {
 	emailDomainRestriction: /.+?@(students\.)?stab\.org/,
 
 	// amount by which to scale up user scores (higher scale, greater precision)
-	userScoreScalingFactor: 100
+	userScoreScalingFactor: 100,
+
+	// number of recent activity rows to display on homepage
+	homeActivityLimit: 50
 }

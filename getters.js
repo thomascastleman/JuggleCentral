@@ -167,7 +167,7 @@ module.exports = {
 	getRecentPersonalBests: function(limit, cb) {
 		if (limit && limit > 0) {
 			// select only personal bests from records, joining to get user and pattern name, limiting size of response
-			con.query('SELECT r.*, u.name AS userName, p.name AS patternName FROM records r JOIN users u ON r.userUID = u.uid JOIN patterns p ON r.patternUID = p.uid WHERE r.isPersonalBest = 1 LIMIT ?;', [limit], function(err, rows) {
+			con.query('SELECT r.*, r.timeRecorded AS timeCreated, u.name AS userName, p.name AS patternName, 1 = 1 AS isPBActivity FROM records r JOIN users u ON r.userUID = u.uid JOIN patterns p ON r.patternUID = p.uid WHERE r.isPersonalBest = 1 LIMIT ?;', [limit], function(err, rows) {
 				if (!err && rows !== undefined) {
 					// callback on records
 					cb(err, rows);
@@ -187,7 +187,7 @@ module.exports = {
 		// ensure limit exists and is positive
 		if (limit && limit > 0) {
 			// select the most recently created users, ordering by recentness
-			con.query('SELECT * FROM users ORDER BY timeCreated DESC LIMIT ?;', [limit], function(err, rows) {
+			con.query('SELECT users.*, 1 = 1 AS isNewUserActivity FROM users ORDER BY timeCreated DESC LIMIT ?;', [limit], function(err, rows) {
 				if (!err && rows !== undefined) {
 					cb(err, rows);
 				} else {
@@ -204,7 +204,7 @@ module.exports = {
 		// ensure limit exists and is positive
 		if (limit && limit > 0) {
 			// select the most recently created patterns, ordering by recentness
-			con.query('SELECT * FROM patterns ORDER BY timeCreated DESC LIMIT ?;', [limit], function(err, rows) {
+			con.query('SELECT patterns.*, 1 = 1 AS isNewPatternActivity FROM patterns ORDER BY timeCreated DESC LIMIT ?;', [limit], function(err, rows) {
 				if (!err && rows !== undefined) {
 					cb(err, rows);
 				} else {
