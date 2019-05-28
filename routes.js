@@ -151,7 +151,20 @@ module.exports = {
 
 		// admin request to add a new user
 		app.post('/addUser', auth.isAdminPOST, function(req, res) {
-
+			// if all required fields are defined
+			if (req.body.name && req.body.email && req.body.isAdmin != undefined) {
+				// add user to users table
+				maintenance.addUser(req.body.name, req.body.email, req.body.bio, req.body.isAdmin, function(err, profile) {
+					if (!err) {
+						// redirect to admin portal
+						res.redirect('/admin');
+					} else {
+						error(res, "Failed to create new user account.");
+					}
+				});
+			} else {
+				error(res, "Failed to add new user as required fields were improperly filled.");
+			}
 		});
 
 		// admin request to change admin status of a user
@@ -286,6 +299,11 @@ module.exports = {
 
 		// request to add a new record
 		app.post('/addRecord', auth.isAuthPOST, function(req, res) {
+			// get userUID from session (only let a user add a record for themself)
+		});
+
+		// request to see edit page for an existing record
+		app.get('/editRecord/:id', auth.isAuthGET, function(req, res) {
 			
 		});
 

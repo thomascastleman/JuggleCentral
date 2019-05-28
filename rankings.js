@@ -28,29 +28,6 @@ module.exports = {
 				con.query('SELECT r.userUID, r.score, r.timeRecorded, p.uid AS patternUID, p.difficulty as patternDifficulty FROM records r JOIN patterns p ON r.patternUID = p.uid WHERE r.isPersonalBest = 1' + constraintB + ' ORDER BY r.userUID, patternUID ASC, timeRecorded DESC;', [], function(err, records){
 					// if there isn't an sql error
 					if (!err && records != undefined) {
-							/*
-								this will add up all of the user's scores and then insert them into the db.
-								
-								var userScores = {};
-								var insertQuery = "";
-								var insertVALUES = [];
-								var curUserUID = 0;
-
-								for each record
-									if userUID associated with this record does not equal the curUserUID
-										if userScores[curUserUID] exists
-											insertQuery += "WHEN uid = ? THEN ? "
-											insertValues.push(curUserUID, userScores[curUserUID]);
-								     update the curUserUID to the userUID associated with this record
-										userScores[the new userUID] = 0
-								
-									userScores[the userUID associated with that record] += (record's score * record's associated pattern's difficulty)
-
-								con.query('UPDATE users SET score = CASE ' + insertQuery + 'ELSE score END;', [insertValues], function(err){
-									cb(err);
-								});
-							*/
-
 						// mapping from user UID to user score
 						var userScores = {};
 

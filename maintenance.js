@@ -9,7 +9,7 @@ var ranking = require('./rankings.js');
 module.exports = {
 
 	// adds a new user to the DB, calls back on the created profile
-	addUser: function(name, email, bio, isAdmin, cb){
+	addUser: function(name, email, bio, isAdmin, cb) {
 		// check whether the required fields aren't null
 		if(name && email && isAdmin != undefined) {
 			// get the score and user rank of the worst ranked existing user
