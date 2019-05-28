@@ -1,8 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>{{patternName}} | JuggleCentral</title>
+	<title>{{pattern.name}} | JuggleCentral</title>
 </head>
 <body>
+	<h1>{{pattern.name}}</h1>
+	<h4>{{pattern.numObjects}}-object pattern</h4>
+	<p>{{pattern.description}}</p>
+	{{#pattern.GIF}}<img src="{{pattern.GIF}}" width="170">{{/pattern.GIF}}
+
+	<br>
+	<a href="/addRecord/{{pattern.uid}}">Add a New Record</a>
+
+	{{#recordsExist}}
+	<h1>Records</h1>
+	
+	<h2>Catches</h2>
+	<table>
+		<tr>
+			<th>Rank</th>
+			<th>Catches</th>
+			<th>Juggler</th>
+			<th>Date</th>
+			<th>Video</th>
+		</tr>
+		{{#records.catchRecords}}
+		<tr>
+			<td>{{recordRank}}</td>
+			<td>{{catches}}</td>
+			<td><a href="/user/{{userUID}}">{{userName}} ({{userRank}})</a></td>
+			<td>{{date}}</td>
+			<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
+		</tr>
+		{{/records.catchRecords}}
+	</table>
+
+	<h2>Time</h2>
+	<table>
+		<tr>
+			<th>Rank</th>
+			<th>Duration</th>
+			<th>Juggler</th>
+			<th>Date</th>
+			<th>Video</th>
+		</tr>
+		{{#records.timeRecords}}
+		<tr>
+			<td>{{recordRank}}</td>
+			<td>{{duration}}</td>
+			<td><a href="/user/{{userUID}}">{{userName}} ({{userRank}})</a></td>
+			<td>{{date}}</td>
+			<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
+		</tr>
+		{{/records.timeRecords}}
+	</table>
+	{{/recordsExist}}
+
+	{{^recordsExist}}
+	<p>No records exist under this pattern.</p>
+	{{/recordsExist}}
 </body>
 </html>

@@ -118,7 +118,25 @@ module.exports = {
 			// get default render object
 			var render = defRender(req);
 
-			res.render('pattern.html', render);
+			// get basic pattern info
+			getters.getPattern(req.params.id, function(err, pattern) {
+				if (!err) {
+					// cache in render object
+					render.pattern = pattern;
+
+					// get records associated with this pattern
+					getters.getRecordsByPattern(req.params.id, function(err, records) {
+						// add records to render object
+						render.records = records;
+						render.recordsExist = records.timeRecords.length > 0 || records.catchRecords.length > 0;
+
+						// render page with info filled in
+						res.render('pattern.html', render);
+					});
+				} else {
+					error(res, "Failed to retrieve pattern information for editing.");
+				}
+			});
 		});
 
 		// render user page
@@ -151,6 +169,7 @@ module.exports = {
 			
 		});
 
+		// render edit pattern page for admin
 		app.get('/editPattern/:id', auth.isAdminGET, function(req, res) {
 			// get default render object
 			var render = defRender(req);
@@ -161,6 +180,7 @@ module.exports = {
 					// cache in render object
 					render.pattern = pattern;
 
+					// get records associated with this pattern
 					getters.getRecordsByPattern(req.params.id, function(err, records) {
 						// add records to render object
 						render.records = records;
@@ -257,6 +277,11 @@ module.exports = {
 			} else {
 				error(res, "You do not have authorization to edit this juggler.");
 			}
+		});
+
+		// render add record page (for pattern specified by URL UID)
+		app.get('/addRecord/:id', auth.isAuthGET, function(req, res) {
+
 		});
 
 		// request to add a new record
