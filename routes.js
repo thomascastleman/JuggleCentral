@@ -225,7 +225,19 @@ module.exports = {
 
 		// admin request to remove an existing user
 		app.post('/removeUser/:id', auth.isAdminPOST, function(req, res) {
-			
+			if (req.user && req.user.local && req.user.local.uid != req.params.id) {
+				// attempt to remove the indicated user
+				maintenance.removeUser(req.params.id, function(err) {
+					if (!err) {
+						// go back to admin portal
+						res.redirect('/admin');
+					} else {
+						error(res, "Failed to remove juggler from system.");
+					}
+				});
+			} else {
+				error(res, "You are unable to remove your own account from the system.");
+			}
 		});
 
 		// admin request to add a new juggling pattern
@@ -291,8 +303,16 @@ module.exports = {
 		});
 
 		// admin request to remove an existing pattern
-		app.post('/removePattern', auth.isAdminPOST, function(req, res) {
-			
+		app.post('/removePattern/:id', auth.isAdminPOST, function(req, res) {
+			// attempt to remove the indicated pattern
+			maintenance.removePattern(req.params.id, function(err) {
+				if (!err) {
+					// go back to admin portal
+					res.redirect('/admin');
+				} else {
+					error(res, "Failed to remove pattern from system.");
+				}
+			});
 		});
 
 

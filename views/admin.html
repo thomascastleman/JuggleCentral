@@ -6,45 +6,53 @@
 <body>
 	<h1>Administrator Portal</h1>
 
-	<h3>Jugglers</h3>
+	<h2>Jugglers</h2>
 
 	<table>
 		<tr>
+			<th>Rank</th>
 			<th>Name</th>
 			<th>Email</th>
 			<th>Bio</th>
 			<th>Admin Status</th>
-			<th>Rank</th>
-			<th>Edit</th>
-			<th>Delete</th>
+		</tr>
+		<tr>
+			<form action="/addUser" method="POST">
+			<td></td>
+			<td><input name="name" type="text" placeholder="Name"></td>
+			<td><input name="email" type="text" placeholder="Email"></td>
+			<td></td>
+			<td>Admin status?</td>
+			<td><button type="submit">Add New</button></td>
+			</form>
 		</tr>
 		{{#users}}
 		<tr>
+			<td>{{userRank}}</td>
 			<td>{{name}}</td>
 			<td>{{email}}</td>
 			<td>{{#shortBio}}{{shortBio}}...{{/shortBio}}</td>
 			<td>{{#isAdmin}}Check{{/isAdmin}}{{^isAdmin}}X{{/isAdmin}}</td>
-			<td>{{userRank}}</td>
 			<td><a href="/editUser/{{uid}}">Edit</a></td>
 			<td><form action="/removeUser/{{uid}}" method="POST"><button type="submit">Delete</button></form></td>
 		</tr>
 		{{/users}}
 	</table>
 
-	<h3>Patterns</h3>
+	<h2>Patterns</h2>
 
 	<table>
 		<tr>
 			<th>Name</th>
-			<th>Description</th>
 			<th>Number of Objects</th>
+			<th>Description</th>
 			<th>GIF</th>
 		</tr>
 		<tr>
 			<form action="/addPattern" method="POST">
 			<td><input name="name" type="text" placeholder="Pattern Name"></td>
-			<td><textarea name="description"></textarea></td>
 			<td><input name="numObjects" type="number" placeholder="Number of Objects"></td>
+			<td><textarea name="description"></textarea></td>
 			<td><input name="GIF" type="text" placeholder="GIF"></td>
 			<td><button type="submit">Add New</button></td>
 			</form>
@@ -52,8 +60,8 @@
 		{{#patterns}}
 		<tr>
 			<td>{{name}}</td>
-			<td>{{#shortDescrip}}{{shortDescrip}}...{{/shortDescrip}}</td>
 			<td>{{numObjects}}</td>
+			<td>{{#shortDescrip}}{{shortDescrip}}...{{/shortDescrip}}</td>
 			<td>{{#shortGIF}}{{shortGIF}}...{{/shortGIF}}</td>
 			<td><a href="/editPattern/{{uid}}">Edit</a></td>
 			<td><form action="/removePattern/{{uid}}" method="POST"><button type="submit">Delete</button></form></td>
