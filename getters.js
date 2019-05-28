@@ -264,6 +264,19 @@ module.exports = {
 				cb(err || "Unable to retrieve all possible number of objects of existing patterns.");
 			}
 		});
+	},
+
+	// get the UID of a user from a given record
+	getUserByRecord: function(uid, cb) {
+		// select only the user UID from this record
+		con.query('SELECT userUID FROM records WHERE uid = ?;', [uid], function(err, rows) {
+			if (!err && rows !== undefined && rows.length > 0) {
+				// callback on the user's UID
+				cb(err, rows[0].userUID);
+			} else {
+				cb(err || "Failed to find record with given UID.");
+			}
+		});
 	}
 	
 }

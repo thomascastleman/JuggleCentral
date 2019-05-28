@@ -150,7 +150,7 @@ module.exports = {
 					getters.getRecordsByUser(req.params.id, function(err, records){
 						if(!err){
 							//if the users chosen name and real name are not the same
-							if(user.name != user.realName){
+							if (user.name != user.realName){
 								render.showBothNames = true;
 							}
 
@@ -238,7 +238,7 @@ module.exports = {
 
 		// admin request to remove an existing user
 		app.post('/removeUser/:id', auth.isAdminPOST, function(req, res) {
-			if (req.user && req.user.local && req.user.local.uid != req.params.id) {
+			if (req.user.local.uid != req.params.id) {
 				// attempt to remove the indicated user
 				maintenance.removeUser(req.params.id, function(err) {
 					if (!err) {
@@ -337,7 +337,7 @@ module.exports = {
 			var render = defRender(req);
 
 			// if session exists and user is editing OWN profile OR is an admin
-			if (req.user && req.user.local && req.user.local.uid == req.params.id || req.user.local.isAdmin == '1') {
+			if (req.user.local.uid == req.params.id || req.user.local.isAdmin == '1') {
 
 				getters.getUser(req.params.id, function(err, user) {
 					if (!err) {
@@ -369,7 +369,7 @@ module.exports = {
 		// request to edit user
 		app.post('/editUser/:id', auth.isAuthPOST, function(req, res) {
 			// if session exists and user is editing OWN profile OR is an admin
-			if (req.user && req.user.local && req.user.local.uid == req.params.id || req.user.local.isAdmin == '1') {
+			if (req.user.local.uid == req.params.id || req.user.local.isAdmin == '1') {
 				// provided name not empty
 				if (req.body.name != '') {
 					// apply edits to user's name & bio
@@ -410,8 +410,32 @@ module.exports = {
 		});
 
 		// request to remove an existing record
-		app.post('/removeRecord', auth.isAuthPOST, function(req, res) {
-			
+		app.post('/removeRecord/:id', auth.isAuthPOST, function(req, res) {
+			if (req.body.redirect) {
+				// get the owner of this record
+				getters.getUserByRecord(req.params.id, function(err, userUID) {
+					if (!err) {
+						// if session exists and user is attempting to remove OWN record OR is an admin
+						if (req.user.local.uid == userUID || req.user.local.isAdmin == '1') {
+							// apply removal to db
+							maintenance.removeRecord(req.params.id, function(err) {
+								if (!err) {
+									// redirect to indicated endpoint
+									res.redirect(req.body.redirect);
+								} else {
+									error(res, "Failed to remove the indicated record.");
+								}
+							});
+						} else {
+							error(res, "You do not have authorization to remove this record.");
+						}
+					} else {
+						error(res, "Failed to determine ownership of record for removal.");
+					}
+				});
+			} else {
+				error(res, "Failed to remove record as no redirect URL given.");
+			}
 		});
 	}
 
