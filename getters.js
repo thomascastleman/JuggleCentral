@@ -122,7 +122,7 @@ module.exports = {
 		//check for insufficient fields
 		if (patternUID != undefined){
 			// get all records associated with this pattern, JOINing on users table to get associated username & user rank
-			con.query('SELECT r.*, u.name AS userName, u.userRank FROM records r JOIN users u ON r.userUID = u.uid WHERE r.patternUID = ? ORDER BY r.catches, r.duration DESC;', [patternUID], function(err, rows){
+			con.query('SELECT r.*, u.name AS userName, u.userRank FROM records r JOIN users u ON r.userUID = u.uid WHERE r.patternUID = ? ORDER BY r.catches DESC, r.duration DESC;', [patternUID], function(err, rows){
 				// if there aren't any errors
 				if(!err && rows !== undefined){
 					// object to store records for this pattern
@@ -133,8 +133,13 @@ module.exports = {
 
 					// for each record associated with this pattern
 					for (var i = 0; i < rows.length; i++){
+
+						// convert date into human-readable format
+						rows[i].date = moment(rows[i].timeRecorded);
+						if (rows[i].date) rows[i].date = rows[i].date.format('M/D/YYYY [at] h:mm A');
+
 						// if this record uses catches
-						if(rows[i].catches != undefined){
+						if (rows[i].catches != undefined){
 							// add it to the catches part of the split records
 							records.catchRecords.push(rows[i]);
 						}

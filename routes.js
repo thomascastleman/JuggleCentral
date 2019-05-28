@@ -152,6 +152,7 @@ module.exports = {
 		});
 
 		app.get('/editPattern/:id', auth.isAdminGET, function(req, res) {
+			// get default render object
 			var render = defRender(req);
 
 			// get basic pattern info
@@ -160,8 +161,14 @@ module.exports = {
 					// cache in render object
 					render.pattern = pattern;
 
-					// render page with info filled in
-					res.render('edit-pattern.html', render);
+					getters.getRecordsByPattern(req.params.id, function(err, records) {
+						// add records to render object
+						render.records = records;
+						render.recordsExist = records.timeRecords.length > 0 || records.catchRecords.length > 0;
+
+						// render page with info filled in
+						res.render('edit-pattern.html', render);
+					});
 				} else {
 					error(res, "Failed to retrieve pattern information for editing.");
 				}
@@ -170,7 +177,20 @@ module.exports = {
 
 		// admin request to update an existing pattern
 		app.post('/editPattern/:id', auth.isAdminPOST, function(req, res) {
-			
+			// if name valid and num objects positive
+			if (req.body.name && req.body.numObjects > 0) {
+				// apply edits to pattern
+				maintenance.editPattern(req.params.id, req.body.name, req.body.numObjects, req.body.description, req.body.GIF, function(err) {
+					if (!err) {
+						// redirect to pattern's page
+						res.redirect('/pattern/' + req.params.id);
+					} else {
+						error(res, "Failed to apply edits to pattern.");
+					}
+				});
+			} else {
+				error(res, "Failed to edit pattern as an invalid name or number of objects was provided.");
+			}
 		});
 
 		// admin request to remove an existing pattern

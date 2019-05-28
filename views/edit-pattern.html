@@ -10,9 +10,65 @@
 		<p>Description</p>
 		<textarea name="description">{{pattern.description}}</textarea><br>
 		<span>Number of Objects: </span><input name="numObjects" type="number" value="{{pattern.numObjects}}"><br>
-		{{#pattern.GIF}}<img src="{{pattern.GIF}}"><br>{{/pattern.GIF}}
+		{{#pattern.GIF}}<img src="{{pattern.GIF}}" width="170"><br>{{/pattern.GIF}}
 		<input name="GIF" type="text" value="{{pattern.GIF}}"><br>
 		<button type="submit">Save</button>
 	</form>
+
+	{{#recordsExist}}
+	<h1>Records</h1>
+	
+	<h2>Catches</h2>
+	<table>
+		<tr>
+			<th>Record Rank</th>
+			<th>Catches</th>
+			<th>Juggler</th>
+			<th>Date</th>
+			<th>Video</th>
+			<th>Edit</th>
+			<th>Delete</th>
+		</tr>
+		{{#records.catchRecords}}
+		<tr>
+			<td>{{recordRank}}</td>
+			<td>{{catches}}</td>
+			<td><a href="/user/{{userUID}}">{{userName}} ({{userRank}})</a></td>
+			<td>{{date}}</td>
+			<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
+			<td><a href="/editRecord/{{uid}}">Edit</a></td>
+			<td><form action="/deleteRecord/{{uid}}" method="POST"><button type="submit">Delete</button></form></td>
+		</tr>
+		{{/records.catchRecords}}
+	</table>
+
+	<h2>Time</h2>
+	<table>
+		<tr>
+			<th>Record Rank</th>
+			<th>Duration</th>
+			<th>Juggler</th>
+			<th>Date</th>
+			<th>Video</th>
+			<th>Edit</th>
+			<th>Delete</th>
+		</tr>
+		{{#records.timeRecords}}
+		<tr>
+			<td>{{recordRank}}</td>
+			<td>{{duration}}</td>
+			<td><a href="/user/{{userUID}}">{{userName}} ({{userRank}})</a></td>
+			<td>{{date}}</td>
+			<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
+			<td><a href="/editRecord/{{uid}}">Edit</a></td>
+			<td><form action="/deleteRecord/{{uid}}" method="POST"><button type="submit">Delete</button></form></td>
+		</tr>
+		{{/records.timeRecords}}
+	</table>
+	{{/recordsExist}}
+
+	{{^recordsExist}}
+	<p>No records exist under this pattern.</p>
+	{{/recordsExist}}
 </body>
 </html>
