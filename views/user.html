@@ -28,7 +28,7 @@
 	</div>
 
 	<h1>{{user.name}} {{#showBothNames}} ({{user.realName}}) {{/showBothNames}}</h1>
-	<p>Rank: {{user.rank}}, Score: {{user.score}}</p>
+	<p>Rank: {{user.userRank}}, Score: {{user.score}}</p>
 	<p>{{user.bio}}</p>
 
 	{{#records}}
@@ -51,8 +51,8 @@
 					{{#catchRecords}}
 					<tr>
 						<td>{{catches}}</td>
-						<td>{{timeRecorded}}</td>
-						<td>{{video}}</td>
+						<td>{{date}}</td>
+						<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
 					</tr>
 					{{/catchRecords}}
 				</tbody>
@@ -77,8 +77,8 @@
 					{{#timeRecords}}
 					<tr>
 						<td>{{duration}}</td>
-						<td>{{timeRecorded}}</td>
-						<td>{{video}}</td>
+						<td>{{date}}</td>
+						<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
 					</tr>
 					{{/timeRecords}}
 				</tbody>

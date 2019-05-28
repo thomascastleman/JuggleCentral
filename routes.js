@@ -154,8 +154,11 @@ module.exports = {
 								render.showBothNames = true;
 							}
 
+							// add user info & record info to render object
 							render.user = user;
 							render.records = records;
+
+							// render user page
 							res.render('user.html', render);
 						}else{
 							error(res, "Failed to get records of the requested user.");
