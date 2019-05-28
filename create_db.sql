@@ -12,7 +12,7 @@ CREATE TABLE users (
 	name VARCHAR(64),
 	email VARCHAR(64) UNIQUE,
 	bio TEXT,
-	isAdmin TINYINT(1),
+	isAdmin TINYINT(1) DEFAULT 0,
 	score INT DEFAULT 0,			-- holistic measure of user's juggling skill
 	userRank INT,					-- user's position in the leaderboard sorted / pooled by user score
 	PRIMARY KEY (uid)

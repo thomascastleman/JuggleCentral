@@ -79,8 +79,13 @@ module.exports = {
 					// remove user and all of their records
 					con.query('DELETE FROM users WHERE uid = ?;', [uid], function(err) {
 						if (!err) {
-							// keep all affected pattern data up to date
-							ranking.maintainPatternInfo(affectedPatterns, cb);
+							// if there are patterns affected by this user (in this case, [] means no affected patterns, not ALL patterns)
+							if (affectedPatterns.length > 0) {
+								// keep all affected pattern data up to date
+								ranking.maintainPatternInfo(affectedPatterns, cb);
+							} else {
+								cb(err);
+							}
 						} else {
 							cb(err);
 						}
@@ -130,8 +135,13 @@ module.exports = {
 								// get all users whose scores are affected by this change in difficulty
 								ranking.affectedUsersByPattern([uid], function(err, affectedUsers) {
 									if (!err) {
-										// handle change in pattern difficulty & manage ripple effect
-										ranking.handlePatternDifficultyChange([uid], affectedUsers, cb);
+										// if any users were affected
+										if (affectedUsers.length > 0) {
+											// handle change in pattern difficulty & manage ripple effect
+											ranking.handlePatternDifficultyChange([uid], affectedUsers, cb);
+										} else {
+											cb(err);
+										}
 									} else {
 										cb(err);
 									}
@@ -162,15 +172,20 @@ module.exports = {
 			// remove pattern from patterns table & delete all associated records
 			con.query('DELETE FROM patterns WHERE uid = ?;', [uid], function(err) {
 				if (!err) {
-					// recalculate user scores for these users, without this pattern
-					ranking.calcUserScores(affectedUsers, function(err) {
-						if (!err) {
-							// update the global rankings accordingly
-							ranking.updateGlobalRanks(cb);
-						} else {
-							cb(err);
-						}
-					});
+					// if any users were affected by this pattern (in this case, [] means no users, and not ALL users)
+					if (affectedUsers.length > 0) {
+						// recalculate user scores for these users, without this pattern
+						ranking.calcUserScores(affectedUsers, function(err) {
+							if (!err) {
+								// update the global rankings accordingly
+								ranking.updateGlobalRanks(cb);
+							} else {
+								cb(err);
+							}
+						});
+					} else {
+						cb(err);
+					}
 				} else {
 					cb(err);
 				}

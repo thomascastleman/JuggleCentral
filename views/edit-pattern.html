@@ -6,6 +6,7 @@
 <body>
 	<h1>Edit Pattern</h1>
 	<form action="/editPattern/{{pattern.uid}}" method="POST">
+		<p>Name</p>
 		<input name="name" type="text" value="{{pattern.name}}">
 		<p>Description</p>
 		<textarea name="description">{{pattern.description}}</textarea><br>

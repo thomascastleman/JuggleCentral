@@ -202,6 +202,9 @@ module.exports = {
 
 		// admin request to add a new user
 		app.post('/addUser', auth.isAdminPOST, function(req, res) {
+			// if switch element was checked, use isAdmin = 1, otherwise 0
+			req.body.isAdmin = req.body.isAdmin == 'on' ? 1 : 0;
+
 			// if all required fields are defined
 			if (req.body.name && req.body.email && req.body.isAdmin != undefined) {
 				// add user to users table

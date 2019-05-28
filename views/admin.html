@@ -2,6 +2,16 @@
 <html>
 <head>
 	<title>Admin Portal | JuggleCentral</title>
+	<link rel="stylesheet" type="text/css" href="/slider.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+	<script>
+		// async post to /changeAdminStatus to update a user's admin status
+		function updateIsAdmin(uid, val) {
+			console.log(uid);
+			console.log(val);
+			// $.post('/changeAdminStatus', { uid: uid, isAdmin: })
+		}
+	</script>
 </head>
 <body>
 	<h1>Administrator Portal</h1>
@@ -13,26 +23,33 @@
 			<th>Rank</th>
 			<th>Name</th>
 			<th>Email</th>
-			<th>Bio</th>
 			<th>Admin Status</th>
 		</tr>
 		<tr>
 			<form action="/addUser" method="POST">
 			<td></td>
-			<td><input name="name" type="text" placeholder="Name"></td>
-			<td><input name="email" type="text" placeholder="Email"></td>
-			<td></td>
-			<td>Admin status?</td>
+			<td><input name="name" type="text" placeholder="Name" autocomplete="off"></td>
+			<td><input name="email" type="text" placeholder="Email" autocomplete="off"></td>
+			<td>
+				<label class="switch">
+					<input name="isAdmin" type="checkbox">
+					<span class="slider round"></span>
+				</label>
+			</td>
 			<td><button type="submit">Add New</button></td>
 			</form>
 		</tr>
 		{{#users}}
 		<tr>
 			<td>{{userRank}}</td>
-			<td>{{name}}</td>
+			<td><a href="/user/{{uid}}">{{name}}</a></td>
 			<td>{{email}}</td>
-			<td>{{#shortBio}}{{shortBio}}...{{/shortBio}}</td>
-			<td>{{#isAdmin}}Check{{/isAdmin}}{{^isAdmin}}X{{/isAdmin}}</td>
+			<td>
+				<label class="switch">
+					<input type="checkbox" {{#isAdmin}}checked{{/isAdmin}} onchange="updateIsAdmin({{uid}}, this.value);">
+					<span class="slider round"></span>
+				</label>
+			</td>
 			<td><a href="/editUser/{{uid}}">Edit</a></td>
 			<td><form action="/removeUser/{{uid}}" method="POST"><button type="submit">Delete</button></form></td>
 		</tr>
@@ -50,7 +67,7 @@
 		</tr>
 		<tr>
 			<form action="/addPattern" method="POST">
-			<td><input name="name" type="text" placeholder="Pattern Name"></td>
+			<td><input name="name" type="text" placeholder="Pattern Name" autocomplete="off"></td>
 			<td><input name="numObjects" type="number" placeholder="Number of Objects"></td>
 			<td><textarea name="description"></textarea></td>
 			<td><input name="GIF" type="text" placeholder="GIF"></td>
@@ -59,7 +76,7 @@
 		</tr>
 		{{#patterns}}
 		<tr>
-			<td>{{name}}</td>
+			<td><a href="/pattern/{{uid}}">{{name}}</a></td>
 			<td>{{numObjects}}</td>
 			<td>{{#shortDescrip}}{{shortDescrip}}...{{/shortDescrip}}</td>
 			<td>{{#shortGIF}}{{shortGIF}}...{{/shortGIF}}</td>
