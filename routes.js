@@ -143,6 +143,10 @@ module.exports = {
 		app.get('/user/:id', function(req, res) {
 			// get default render object
 			var render = defRender(req);
+
+			// register if viewing own profile
+			render.viewingOwn = req.params.id == req.user.local.uid;
+
 			//get information associated with the user
 			getters.getUser(req.params.id, function(err, user){
 				if(!err){
@@ -391,7 +395,7 @@ module.exports = {
 
 		// render add record page (for pattern specified by URL UID)
 		app.get('/addRecord/:id', auth.isAuthGET, function(req, res) {
-
+			
 		});
 
 		// request to add a new record

@@ -4,6 +4,9 @@
 	<title>{{user.name}} | JuggleCentral</title>
 </head>
 <body>
+	{{#viewingOwn}}<a href="/editUser/{{user.uid}}">Edit Your Profile</a>{{/viewingOwn}}
+	{{^viewingOwn}}{{#auth.userIsAdmin}}<a href="/editUser/{{user.uid}}">Edit Juggler</a>{{/auth.userIsAdmin}}{{/viewingOwn}}
+
 	<h1>{{user.name}} {{#showBothNames}} ({{user.realName}}) {{/showBothNames}}</h1>
 	<p>Rank: {{user.userRank}}, Score: {{user.score}}</p>
 	<p>{{user.bio}}</p>

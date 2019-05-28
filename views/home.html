@@ -17,6 +17,9 @@
 			<li><a href="/leaderboard">Leaderboard</a></li>
 			<div style="float:right">
 				{{#auth.isAuthenticated}}
+				{{#auth.userIsAdmin}}
+				<li><a href="/admin">Admin Portal</a></li>
+				{{/auth.userIsAdmin}}
 				<li><a href="/user/{{auth.userUID}}">My Profile ({{auth.givenName}})</a></li>
 				<li><a href="/logout">Log Out <i class="fas fa-sign-out-alt"></i></a></li>
 				{{/auth.isAuthenticated}}
