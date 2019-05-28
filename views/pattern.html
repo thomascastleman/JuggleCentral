@@ -4,6 +4,9 @@
 	<title>{{pattern.name}} | JuggleCentral</title>
 </head>
 <body>
+
+	{{#auth.userIsAdmin}}<a href="/editPattern/{{pattern.uid}}">Edit Pattern</a>{{/auth.userIsAdmin}}
+
 	<h1>{{pattern.name}}</h1>
 	<h4>{{pattern.numObjects}}-object pattern</h4>
 	<p>{{pattern.description}}</p>
