@@ -30,6 +30,19 @@ module.exports = {
 		}
 	},
 
+	// get all existing user accounts
+	getAllUsers: function(cb) {
+		// select profiles from users table
+		con.query('SELECT users.*, SUBSTR(bio, 1, 35) AS shortBio FROM users ORDER BY uid DESC;', function(err, rows) {
+			if (!err && rows !== undefined) {
+				// callback on user profiles
+				cb(err, rows);
+			} else {
+				cb(err || "Failed to get all user information from database.");
+			}
+		});
+	},
+
 	// Get all pattern info associated with ID.
 	getPattern: function(uid, cb){
 		// check for insufficient fields
@@ -50,6 +63,19 @@ module.exports = {
 		else{
 			cb("uid is undefined.");
 		}
+	},
+
+	// get all existing patterns from db
+	getAllPatterns: function(cb) {
+		// select profiles from patterns table
+		con.query('SELECT patterns.*, SUBSTR(description, 1, 35) AS shortDescrip, SUBSTR(GIF, 1, 35) AS shortGIF FROM patterns ORDER BY uid DESC;', function(err, rows) {
+			if (!err && rows !== undefined) {
+				// callback on patterns
+				cb(err, rows);
+			} else {
+				cb(err || "Failed to get all pattern information from database.");
+			}
+		});
 	},
 
 	/*	Get all the records of a given user.

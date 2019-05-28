@@ -37,7 +37,7 @@
 			<td>{{date}}</td>
 			<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
 			<td><a href="/editRecord/{{uid}}">Edit</a></td>
-			<td><form action="/deleteRecord/{{uid}}" method="POST"><button type="submit">Delete</button></form></td>
+			<td><form action="/removeRecord/{{uid}}" method="POST"><button type="submit">Delete</button></form></td>
 		</tr>
 		{{/records.catchRecords}}
 	</table>
@@ -61,7 +61,7 @@
 			<td>{{date}}</td>
 			<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
 			<td><a href="/editRecord/{{uid}}">Edit</a></td>
-			<td><form action="/deleteRecord/{{uid}}" method="POST"><button type="submit">Delete</button></form></td>
+			<td><form action="/removeRecord/{{uid}}" method="POST"><button type="submit">Delete</button></form></td>
 		</tr>
 		{{/records.timeRecords}}
 	</table>

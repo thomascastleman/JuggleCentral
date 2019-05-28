@@ -172,6 +172,34 @@ module.exports = {
 
 		/* --------------- Administrator Endpoints --------------- */
 
+		app.get('/admin', auth.isAdminGET, function(req, res) {
+			// get default render object
+			var render = defRender(req);
+
+			// get all user profiles
+			getters.getAllUsers(function(err, users) {
+				if (!err) {
+					// store in render object
+					render.users = users;
+
+					// get all pattern info
+					getters.getAllPatterns(function(err, patterns) {
+						if (!err) {
+							// store in render object
+							render.patterns = patterns;
+
+							// render admin portal with info filled in
+							res.render('admin.html', render);
+						} else {
+							error(res, "Failed to retrieve all pattern information.");
+						}
+					});
+				} else {
+					error(res, "Failed to retrieve all user information.");
+				}
+			});
+		});
+
 		// admin request to add a new user
 		app.post('/addUser', auth.isAdminPOST, function(req, res) {
 			// if all required fields are defined
@@ -196,13 +224,26 @@ module.exports = {
 		});
 
 		// admin request to remove an existing user
-		app.post('/removeUser', auth.isAdminPOST, function(req, res) {
+		app.post('/removeUser/:id', auth.isAdminPOST, function(req, res) {
 			
 		});
 
 		// admin request to add a new juggling pattern
 		app.post('/addPattern', auth.isAdminPOST, function(req, res) {
-			
+			// if name exists and request has positive number of objects
+			if (req.body.name && req.body.numObjects > 0) {
+				// add to patterns table
+				maintenance.addPattern(req.body.name, req.body.description, req.body.numObjects, req.body.GIF, function(err) {
+					if (!err) {
+						// redirect back to admin portal to see updated patterns table
+						res.redirect('/admin');
+					} else {
+						error(res, "Failed to add new pattern to database.");
+					}
+				});
+			} else {
+				error(res, "Failed to add new pattern as one or more required fields was invalid.");
+			}
 		});
 
 		// render edit pattern page for admin
