@@ -4,6 +4,7 @@
 */
 
 var con = require('./database.js').connection;
+var moment = require('moment');
 
 module.exports = {
 
@@ -55,10 +56,10 @@ module.exports = {
 		Will JOIN to get pattern name. ORDER BY patternUID, catches, duration. 
 		Splits into array of pattern objects with uid, name, and all catch and time records for this user */
 	getRecordsByUser: function(userUID, cb){
-		//check for insufficient fields
+		// check for insufficient fields
 		if (userUID != undefined){
 			// retrieve the information from the db
-			con.query('SELECT r.*, p.name AS patternName FROM records r JOIN patterns p ON r.patternUID = p.uid WHERE r.userUID = ? ORDER BY r.patternUID, r.duration, r.catches DESC;', [userUID], function(err, rows){
+			con.query('SELECT r.*, p.name AS patternName FROM records r JOIN patterns p ON r.patternUID = p.uid WHERE r.userUID = ? ORDER BY r.patternUID, r.duration DESC, r.catches DESC;', [userUID], function(err, rows){
 				// if there isn't an error, callback the info.
 				if (!err && rows !== undefined){
 					var patterns = [];
@@ -67,6 +68,10 @@ module.exports = {
 					// for each record
 					for (var i = 0; i < rows.length; i++) {
 						var r = rows[i];
+
+						// convert date into human-readable format
+						r.date = moment(r.timeRecorded);
+						if (r.date) r.date = r.date.format('M/D/YYYY [at] h:mm A');
 
 						// if no existing object for this record's pattern
 						if (!idToPattern[r.patternUID]) {
@@ -82,8 +87,10 @@ module.exports = {
 						// insert into the appropriate array of records within pattern object
 						if (r.catches != null) {
 							idToPattern[r.patternUID].catchRecords.push(r);
+							idToPattern[r.patternUID].catchRecordsExist = true;
 						} else {
 							idToPattern[r.patternUID].timeRecords.push(r);
+							idToPattern[r.patternUID].timeRecordsExist = true;
 						}
 					}
 
@@ -115,7 +122,7 @@ module.exports = {
 		//check for insufficient fields
 		if (patternUID != undefined){
 			// get all records associated with this pattern, JOINing on users table to get associated username & user rank
-			con.query('SELECT r.*, u.name AS userName, u.userRank FROM records r JOIN users u ON r.userUID = u.uid WHERE r.patternUID = ? ORDER BY r.catches, r.duration DESC;', [patternUID], function(err, rows){
+			con.query('SELECT r.*, u.name AS userName, u.userRank FROM records r JOIN users u ON r.userUID = u.uid WHERE r.patternUID = ? ORDER BY r.catches DESC, r.duration DESC;', [patternUID], function(err, rows){
 				// if there aren't any errors
 				if(!err && rows !== undefined){
 					// object to store records for this pattern
@@ -126,8 +133,13 @@ module.exports = {
 
 					// for each record associated with this pattern
 					for (var i = 0; i < rows.length; i++){
+
+						// convert date into human-readable format
+						rows[i].date = moment(rows[i].timeRecorded);
+						if (rows[i].date) rows[i].date = rows[i].date.format('M/D/YYYY [at] h:mm A');
+
 						// if this record uses catches
-						if(rows[i].catches != undefined){
+						if (rows[i].catches != undefined){
 							// add it to the catches part of the split records
 							records.catchRecords.push(rows[i]);
 						}

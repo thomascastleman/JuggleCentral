@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>{{pattern.name}} | JuggleCentral</title>
+	<title>Edit Pattern | JuggleCentral</title>
 </head>
 <body>
-
-	{{#auth.userIsAdmin}}<a href="/editPattern/{{pattern.uid}}">Edit Pattern</a>{{/auth.userIsAdmin}}
-
-	<h1>{{pattern.name}}</h1>
-	<h4>{{pattern.numObjects}}-object pattern</h4>
-	<p>{{pattern.description}}</p>
-	{{#pattern.GIF}}<img src="{{pattern.GIF}}" width="170">{{/pattern.GIF}}
-
-	<br>
-	<a href="/addRecord/{{pattern.uid}}">Add a New Record</a>
+	<h1>Edit Pattern</h1>
+	<form action="/editPattern/{{pattern.uid}}" method="POST">
+		<input name="name" type="text" value="{{pattern.name}}">
+		<p>Description</p>
+		<textarea name="description">{{pattern.description}}</textarea><br>
+		<span>Number of Objects: </span><input name="numObjects" type="number" value="{{pattern.numObjects}}"><br>
+		{{#pattern.GIF}}<img src="{{pattern.GIF}}" width="170"><br>{{/pattern.GIF}}
+		<input name="GIF" type="text" value="{{pattern.GIF}}"><br>
+		<button type="submit">Save</button>
+	</form>
 
 	{{#recordsExist}}
 	<h1>Records</h1>
@@ -26,6 +26,8 @@
 			<th>Juggler</th>
 			<th>Date</th>
 			<th>Video</th>
+			<th>Edit</th>
+			<th>Delete</th>
 		</tr>
 		{{#records.catchRecords}}
 		<tr>
@@ -34,6 +36,8 @@
 			<td><a href="/user/{{userUID}}">{{userName}} ({{userRank}})</a></td>
 			<td>{{date}}</td>
 			<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
+			<td><a href="/editRecord/{{uid}}">Edit</a></td>
+			<td><form action="/deleteRecord/{{uid}}" method="POST"><button type="submit">Delete</button></form></td>
 		</tr>
 		{{/records.catchRecords}}
 	</table>
@@ -46,6 +50,8 @@
 			<th>Juggler</th>
 			<th>Date</th>
 			<th>Video</th>
+			<th>Edit</th>
+			<th>Delete</th>
 		</tr>
 		{{#records.timeRecords}}
 		<tr>
@@ -54,6 +60,8 @@
 			<td><a href="/user/{{userUID}}">{{userName}} ({{userRank}})</a></td>
 			<td>{{date}}</td>
 			<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
+			<td><a href="/editRecord/{{uid}}">Edit</a></td>
+			<td><form action="/deleteRecord/{{uid}}" method="POST"><button type="submit">Delete</button></form></td>
 		</tr>
 		{{/records.timeRecords}}
 	</table>
