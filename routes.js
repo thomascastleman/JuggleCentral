@@ -143,8 +143,28 @@ module.exports = {
 		app.get('/user/:id', function(req, res) {
 			// get default render object
 			var render = defRender(req);
+			//get information associated with the user
+			getters.getUser(req.params.id, function(err, user){
+				if(!err){
+					//get the records associated with the user
+					getters.getRecordsByUser(req.params.id, function(err, records){
+						if(!err){
+							//if the users chosen name and real name are not the same
+							if(user.name != user.realName){
+								render.showBothNames = true;
+							}
 
-			res.render('user.html', render);
+							render.user = user;
+							render.records = records;
+							res.render('user.html', render);
+						}else{
+							error(res, "Failed to get records of the requested user.");
+						}
+					});
+				}else{
+					error(res, "Failed to find user with requested id.");
+				}
+			});
 		});
 
 		/* --------------- Administrator Endpoints --------------- */

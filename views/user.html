@@ -1,8 +1,89 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>{{userName}} | JuggleCentral</title>
+	<title>{{user.name}} | JuggleCentral</title>
 </head>
 <body>
+	<div class="navbar">
+		<ul>
+			<li><a href="/">JuggleCentral</a></li>
+			<li>
+				<form action="/search" method="POST">
+					<input name="query" type="text" placeholder="Search..." autocomplete="off">
+					<button type="submit">Search<i class="fas fa-search"></i></button>
+				</form>
+			</li>
+			<li><a href="/search">Browse Patterns</a></li>
+			<li><a href="/leaderboard">Leaderboard</a></li>
+			<div style="float:right">
+				{{#auth.isAuthenticated}}
+				<li><a href="/user/{{auth.userUID}}">My Profile ({{auth.givenName}})</a></li>
+				<li><a href="/logout">Log Out <i class="fas fa-sign-out-alt"></i></a></li>
+				{{/auth.isAuthenticated}}
+				{{^auth.isAuthenticated}}
+				<li><a href="/auth/google">Log In <i class="fas fa-sign-in-alt"></i></a></li>
+				{{/auth.isAuthenticated}}
+			</div>
+		</ul>
+	</div>
+
+	<h1>{{user.name}} {{#showBothNames}} ({{user.realName}}) {{/showBothNames}}</h1>
+	<p>Rank: {{user.rank}}, Score: {{user.score}}</p>
+	<p>{{user.bio}}</p>
+
+	{{#records}}
+		<div style="height:100px; overflow-y: scroll;">
+			<table>
+				<thead>
+					<tr>
+						<th>
+							{{name}}
+						</th>
+						<th>
+							Event Rank: ?
+						</th>
+						<th>
+							Type: Catches
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					{{#catchRecords}}
+					<tr>
+						<td>{{catches}}</td>
+						<td>{{timeRecorded}}</td>
+						<td>{{video}}</td>
+					</tr>
+					{{/catchRecords}}
+				</tbody>
+			</table>
+		</div>
+		<div div style="height:100px; overflow-y: scroll;">
+			<table>
+				<thead>
+					<tr>
+						<th>
+							{{name}}
+						</th>
+						<th>
+							Event Rank: ?
+						</th>
+						<th>
+							Type: Duration
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					{{#timeRecords}}
+					<tr>
+						<td>{{duration}}</td>
+						<td>{{timeRecorded}}</td>
+						<td>{{video}}</td>
+					</tr>
+					{{/timeRecords}}
+				</tbody>
+			</table>
+		</div>
+	{{/records}}
 </body>
 </html>
