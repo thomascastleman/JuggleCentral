@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Edit Pattern | JuggleCentral</title>
+</head>
+<body>
+	<h1>Edit Pattern</h1>
+	<form action="/editPattern/{{pattern.uid}}" method="POST">
+		<input name="name" type="text" value="{{pattern.name}}">
+		<p>Description</p>
+		<textarea name="description">{{pattern.description}}</textarea><br>
+		<span>Number of Objects: </span><input name="numObjects" type="number" value="{{pattern.numObjects}}"><br>
+		{{#pattern.GIF}}<img src="{{pattern.GIF}}"><br>{{/pattern.GIF}}
+		<input name="GIF" type="text" value="{{pattern.GIF}}"><br>
+		<button type="submit">Save</button>
+	</form>
+</body>
+</html>

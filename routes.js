@@ -151,8 +151,25 @@ module.exports = {
 			
 		});
 
+		app.get('/editPattern/:id', auth.isAdminGET, function(req, res) {
+			var render = defRender(req);
+
+			// get basic pattern info
+			getters.getPattern(req.params.id, function(err, pattern) {
+				if (!err) {
+					// cache in render object
+					render.pattern = pattern;
+
+					// render page with info filled in
+					res.render('edit-pattern.html', render);
+				} else {
+					error(res, "Failed to retrieve pattern information for editing.");
+				}
+			});
+		});
+
 		// admin request to update an existing pattern
-		app.post('/editPattern', auth.isAdminPOST, function(req, res) {
+		app.post('/editPattern/:id', auth.isAdminPOST, function(req, res) {
 			
 		});
 
@@ -164,9 +181,62 @@ module.exports = {
 
 		/* --------------- Regular User Endpoints --------------- */
 
+		// request for edit user page for a given user
+		app.get('/editUser/:id', auth.isAuthGET, function(req, res) {
+			// get default render object
+			var render = defRender(req);
+
+			// if session exists and user is editing OWN profile OR is an admin
+			if (req.user && req.user.local && req.user.local.uid == req.params.id || req.user.local.isAdmin == '1') {
+
+				getters.getUser(req.params.id, function(err, user) {
+					if (!err) {
+						// store profile in render object
+						render.juggler = user;
+
+						// get user's records to link to edit pages / delete
+						getters.getRecordsByUser(req.params.id, function(err, competingPatterns) {
+							if (!err) {
+								// store competing patterns in render object, register that they exist
+								render.competingPatterns = competingPatterns;
+								render.recordsExist = competingPatterns.length > 0;
+
+								// render edit page with juggler info filled in
+								res.render('edit-user.html', render);
+							} else {
+								error(res, "Failed to retrieve this juggler's records.");
+							}
+						});
+					} else {
+						error(res, "Failed to get juggler profile information.");
+					}
+				});
+			} else {
+				error(res, "You do not have authorization to edit this juggler.");
+			}
+		});
+
 		// request to edit user
-		app.post('/editUser', auth.isAuthPOST, function(req, res) {
-			
+		app.post('/editUser/:id', auth.isAuthPOST, function(req, res) {
+			// if session exists and user is editing OWN profile OR is an admin
+			if (req.user && req.user.local && req.user.local.uid == req.params.id || req.user.local.isAdmin == '1') {
+				// provided name not empty
+				if (req.body.name != '') {
+					// apply edits to user's name & bio
+					maintenance.editUser(req.params.id, req.body.name, req.body.bio, null, function(err) {
+						if (!err) {
+							// redirect to user's page
+							res.redirect('/user/' + req.params.id);
+						} else {
+							error(res, "The system failed to edit the requested juggler.");
+						}
+					});
+				} else {
+					error(res, "You must provide a user name.");
+				}
+			} else {
+				error(res, "You do not have authorization to edit this juggler.");
+			}
 		});
 
 		// request to add a new record
@@ -175,7 +245,7 @@ module.exports = {
 		});
 
 		// request to edit an existing record
-		app.post('/editRecord', auth.isAuthPOST, function(req, res) {
+		app.post('/editRecord/:id', auth.isAuthPOST, function(req, res) {
 			
 		});
 

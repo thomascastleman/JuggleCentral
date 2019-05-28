@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Edit Juggler | JuggleCentral</title>
+</head>
+<body>
+	<h1>Edit Juggler</h1>
+	<form action="/editUser/{{juggler.uid}}" method="POST">
+		<input name="name" type="text" value="{{juggler.name}}" autocomplete="off">
+		<p>Rank {{juggler.userRank}} ({{juggler.score}})</p>
+		<p>Bio</p>
+		<textarea name="bio">{{juggler.bio}}</textarea><br>
+		<button type="submit">Save</button>
+	</form>
+
+	{{#recordsExist}}
+	<h1>Competing Patterns</h1>
+	{{#competingPatterns}}
+	<h3><a href="/pattern/{{uid}}">{{name}}</a></h3>
+
+	<h4>Catches</h4>
+	<table>
+		<tr>
+			<th>Catches</th>
+			<th>Record Rank</th>
+			<th>Date</th>
+			<th>Video</th>
+			<th>Edit</th>
+			<th>Delete</th>
+
+		</tr>
+		{{#catchRecords}}
+		<tr>
+			<td>{{catches}}</td>
+			<td>{{recordRank}}</td>
+			<td>{{date}}</td>
+			<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
+			<td><a href="/editRecord/{{uid}}">Edit</a></td>
+			<td><form action="/deleteRecord/{{uid}}" method="POST"><button type="submit">Delete</button></form></td>
+		</tr>
+		{{/catchRecords}}
+	</table>
+
+	<h4>Time</h4>
+	<table>
+		<tr>
+			<th>Duration</th>
+			<th>Record Rank</th>
+			<th>Date</th>
+			<th>Video</th>
+			<th>Edit</th>
+			<th>Delete</th>
+
+		</tr>
+		{{#timeRecords}}
+		<tr>
+			<td>{{duration}}</td>
+			<td>{{recordRank}}</td>
+			<td>{{date}}</td>
+			<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
+			<td><a href="/editRecord/{{uid}}">Edit</a></td>
+			<td><form action="/deleteRecord/{{uid}}" method="POST"><button type="submit">Delete</button></form></td>
+		</tr>
+		{{/timeRecords}}
+	</table>
+	{{/competingPatterns}}
+	{{/recordsExist}}
+</body>
+</html>
