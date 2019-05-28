@@ -223,7 +223,17 @@ module.exports = {
 
 		// admin request to change admin status of a user
 		app.post('/changeAdminStatus', auth.isAdminPOST, function(req, res) {
-			
+			// if required fields are defined
+			if (req.body.uid > 0 && req.body.isAdmin != undefined) {
+				// apply edits to isAdmin attribute only
+				maintenance.editUser(req.body.uid, null, null, req.body.isAdmin, function(err) {
+					// respond with error, if any
+					res.send({ err: err });
+				});
+			} else {
+				// send error for invalid fields
+				res.send({ err: "Failed to update admin status as the UID or status provided was invalid." });
+			}
 		});
 
 		// admin request to remove an existing user

@@ -6,10 +6,15 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
 	<script>
 		// async post to /changeAdminStatus to update a user's admin status
-		function updateIsAdmin(uid, val) {
-			console.log(uid);
-			console.log(val);
-			// $.post('/changeAdminStatus', { uid: uid, isAdmin: })
+		function updateIsAdmin(uid, checked) {
+			// post data
+			$.post("/changeAdminStatus", { uid: uid, isAdmin: checked })
+				.done(function(data) {
+					// show error if any
+					if (data.err) {
+						alert("Failed to update juggler's admin status.");
+					}
+				});
 		}
 	</script>
 </head>
@@ -46,7 +51,7 @@
 			<td>{{email}}</td>
 			<td>
 				<label class="switch">
-					<input type="checkbox" {{#isAdmin}}checked{{/isAdmin}} onchange="updateIsAdmin({{uid}}, this.value);">
+					<input id="{{uid}}" data-checked="{{#isAdmin}}1{{/isAdmin}}{{^isAdmin}}0{{/isAdmin}}" type="checkbox" {{#isAdmin}}checked{{/isAdmin}} onchange="this.dataset.checked = this.dataset.checked == '1' ? '0' : '1'; updateIsAdmin({{uid}}, this.dataset.checked);">
 					<span class="slider round"></span>
 				</label>
 			</td>
