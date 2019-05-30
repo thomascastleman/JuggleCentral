@@ -70,6 +70,7 @@ module.exports = {
 						}
 					});
 				} else {
+					console.log(err);
 					error(res, "Failed to gather recent personal bests information.");
 				}
 			});
@@ -160,7 +161,11 @@ module.exports = {
 
 							// add user info & record info to render object
 							render.user = user;
-							render.records = records;
+							
+							if(records.length > 0){
+								render.records = records;	
+							}
+							
 
 							// render user page
 							res.render('user.html', render);
