@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Add Record | JuggleCentral</title>
+	<link rel="stylesheet" type="text/css" href="/css/toggle.css">
+	<link rel="stylesheet" type="text/css" href="/css/bootstrap-duration-picker.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+	<script type="text/javascript" src="/js/bootstrap-duration-picker.js"></script>
+	<script>
+		$(document).ready(function() {
+			var toggle = document.getElementById('container');
+			var toggleContainer = document.getElementById('toggle-container');
+			var toggleNumber;
+
+			toggle.addEventListener('click', function() {
+				toggleNumber = !toggleNumber;
+				if (toggleNumber) {
+					toggleContainer.style.clipPath = 'inset(0 0 0 50%)';
+					toggleContainer.style.backgroundColor = '#4286f4';
+				} else {
+					toggleContainer.style.clipPath = 'inset(0 50% 0 0)';
+					toggleContainer.style.backgroundColor = '#4286f4';
+				}
+
+				// forget previous inputs when toggle switched
+				$('#catches').val('');
+				$('#duration').val('');
+				$('.input-sm').val('0');
+
+				if (toggleNumber) {
+					// display time input
+					$('#time-input-wrapper').show();
+					$('#catch-input-wrapper').hide();
+				} else {
+					// display catch input
+					$('#catch-input-wrapper').show();
+					$('#time-input-wrapper').hide();
+				}
+			});
+
+			// setup the duration input
+		    $('#duration').durationPicker({
+		    	showDays: false,
+		    	onChanged: function (newVal) {
+					$('#duration-label').text(newVal);
+		    	}
+		    });
+
+		    // clear duration input (otherwise defaults to 0)
+		    $('#duration').val('');
+		});
+	</script>
+</head>
+<body>
+	<h1>Add a New Record</h1>
+	<form action="/addRecord" method="POST">
+		<table>
+	        <tr>
+	            <th>Juggler:</th>
+	            <td>
+					<p>{{juggler.name}}</p>
+					<input name="userUID" value="{{juggler.uid}}" hidden>
+	            </td>
+	        </tr>
+	        <tr>
+	            <th>Pattern:</th>
+	            <td>
+					<select name="patternUID">
+						{{#patterns}}
+						<option value="{{uid}}" {{#selected}}selected{{/selected}}>{{name}}</option>
+						{{/patterns}}
+					</select>
+	            </td>
+	        </tr>
+	        <tr>
+	            <th>Video Evidence: (optional)</th>
+	            <td>
+					<input name="video" autocomplete="off">
+	            </td>
+	        </tr>
+		</table>
+
+		<!-- toggle for changing between catch-based scoring and time-based scoring -->
+		<div id="container">
+			<div class="inner-container">
+				<div class="toggle">
+					<p>Time</p>
+				</div>
+				<div class="toggle">
+					<p>Catches</p>
+				</div>
+			</div>
+			<div class="inner-container" id='toggle-container'>
+				<div class="toggle">
+					<p>Time</p>
+				</div>
+				<div class="toggle">
+					<p>Catches</p>
+				</div>
+			</div>
+		</div>
+
+		<div id="catch-input-wrapper">
+			<!-- catches input -->
+			<span><input name="catches" id="catches" type="number"> catches</span>
+		</div>
+		<div id="time-input-wrapper" hidden>
+			<!-- duration input -->
+			<div class="col-md-offset-3 col-md-6">
+				<label>Duration</label>
+				<input name="duration" id="duration" type="text" class="form-control" id="duration">
+			</div>
+		</div>
+
+		<br>
+		<button type="submit">Submit Record</button>
+	</form>
+</body>
+</html>

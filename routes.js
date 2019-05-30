@@ -46,7 +46,7 @@ module.exports = {
 									}
 
 									if (render.activity.length > 0) {
-										// sort by date of occurrence
+										// sort by date of occurrence (most recent to front)
 										render.activity.sort(function(a, b) {
 											return b.timeCreated.isBefore(a.timeCreated) ? -1 : 1;
 										});
@@ -145,7 +145,7 @@ module.exports = {
 			var render = defRender(req);
 
 			// register if viewing own profile
-			render.viewingOwn = req.params.id == req.user.local.uid;
+			render.viewingOwn = req.user && req.user.local && req.params.id == req.user.local.uid;
 
 			//get information associated with the user
 			getters.getUser(req.params.id, function(err, user){
@@ -186,8 +186,8 @@ module.exports = {
 					// store in render object
 					render.users = users;
 
-					// get all pattern info
-					getters.getAllPatterns(function(err, patterns) {
+					// get all pattern info (with recent patterns first)
+					getters.getAllPatterns(true, function(err, patterns) {
 						if (!err) {
 							// store in render object
 							render.patterns = patterns;
@@ -393,14 +393,144 @@ module.exports = {
 			}
 		});
 
+		// render add record page without specified pattern
+		app.get('/addRecord', auth.isAuthGET, function(req, res) {
+			// get default render object
+			var render = defRender(req);
+
+			// get info of user for whom to add the record
+			getters.getUser(req.user.local.uid, function(err, user) {
+				if (!err) {
+					// add to render object
+					render.juggler = user;
+
+					// get all pattern info for pattern selector
+					getters.getAllPatterns(false, function(err, patterns) {
+						if (!err) {
+							// add to render object
+							render.patterns = patterns;
+
+							// render page
+							res.render('add-record.html', render);
+						} else {
+							error(res, "Failed to retrieve all pattern information.");
+						}
+					});
+				} else {
+					error(res, "Failed to retrieve user information.");
+				}
+			});
+		});
+
 		// render add record page (for pattern specified by URL UID)
 		app.get('/addRecord/:id', auth.isAuthGET, function(req, res) {
-			
+			// get default render object
+			var render = defRender(req);
+
+			// get info of user for whom to add the record
+			getters.getUser(req.user.local.uid, function(err, user) {
+				if (!err) {
+					// add to render object
+					render.juggler = user;
+
+					// get all pattern info for pattern selector
+					getters.getAllPatterns(false, function(err, patterns) {
+						if (!err) {
+							// add to render object
+							render.patterns = patterns;
+
+							// select the pattern specified by the URL parameter
+							for (var i = 0; i < patterns.length; i++) {
+								if (render.patterns[i].uid == req.params.id) {
+									render.patterns[i].selected = true;
+									break;
+								}
+							}
+
+							// render page
+							res.render('add-record.html', render);
+						} else {
+							error(res, "Failed to retrieve all pattern information.");
+						}
+					});
+				} else {
+					error(res, "Failed to retrieve user information.");
+				}
+			});
 		});
 
 		// request to add a new record
 		app.post('/addRecord', auth.isAuthPOST, function(req, res) {
-			// get userUID from session (only let a user add a record for themself)
+			// get default render object
+			var render = defRender(req);
+
+			// if required fields defined and not both catches and duration
+			if (req.body.userUID && req.body.patternUID && (req.body.catches > 0 || req.body.duration > 0) && !(req.body.catches > 0 && req.body.duration > 0)) {
+				// only allow user to add their own records
+				if (req.user.local.uid == req.body.userUID) {
+					// get user info for calculating scoring changes
+					getters.getUser(req.user.local.uid, function(err, beforeUser) {
+						if (!err) {
+							// convert duration seconds to HH:mm:ss format for DB insertion
+							if (req.body.duration) {
+								req.body.duration = formatDuration(req.body.duration);
+
+								// use formatted duration as record string
+								render.recordString = req.body.duration;
+
+								// ensure catches field is null
+								req.body.catches = null;
+							} else {
+								// format record string for catches
+								render.recordString = req.body.catches + " catches";
+
+								// ensure duration field is null
+								req.body.duration = null;
+							}
+
+							// add new record to records table
+							maintenance.addRecord(req.user.local.uid, req.body.patternUID, req.body.catches, req.body.duration, req.body.video, function(err) {
+								if (!err) {
+									// get user info for calculating scoring changes
+									getters.getUser(req.user.local.uid, function(err, afterUser) {
+										if (!err) {
+											// store in render object
+											render.user = afterUser;
+
+											// calc difference in score / rank since new record
+											render.scoreDiff = getDifference(beforeUser.score, afterUser.score);
+											render.rankDiff = getDifference(beforeUser.userRank, afterUser.userRank);
+
+											// get pattern name
+											getters.getPattern(req.body.patternUID, function(err, pattern) {
+												if (!err) {
+													// store in render object
+													render.pattern = pattern;
+													
+													// render page
+													res.render('add-record-success.html', render);
+												} else {
+													error(res, "Failed to retrieve related pattern information.");
+												}
+											});
+										} else {
+											error(res, "Failed to retrieve related user information after applying record updates.");
+										}
+									});
+								} else {
+									error(res, "Faild to add new record.");
+								}
+							});
+						} else {
+							error(res, "Failed to retrieve related user information.");
+						}
+					});
+				} else {
+					error(res, "You do not have authorization to add a new record for this user.");
+				}
+			} else {
+				error(res, "Failed to add new record as not all required fields were defined.");
+			}
 		});
 
 		// request to see edit page for an existing record
@@ -467,6 +597,27 @@ function defRender(req) {
 // render an error message to user
 function error(res, message) {
 	res.render('error.html', { message: message });
+}
+
+// convert from seconds to HH:mm:ss string
+function formatDuration(sec) {
+	return moment.utc(sec * 1000).format('HH:mm:ss');
+}
+
+// get an object describing difference between two fields
+function getDifference(before, after) {
+	// calc difference in field
+	var d = { diff: after - before };
+
+	// prefix with + or - and add a class describing change
+	if (d.diff >= 0) {
+		d.diff = '+' + d.diff;
+		d.class = d.diff == 0 ? 'neut' : 'pos';
+	} else {
+		d.class = 'neg';
+	}
+
+	return d;
 }
 
 // render the search page appropriately with results for the given query and parameters

@@ -13,7 +13,9 @@
 	{{#pattern.GIF}}<img src="{{pattern.GIF}}" width="170">{{/pattern.GIF}}
 
 	<br>
+	{{#auth.isAuthenticated}}
 	<a href="/addRecord/{{pattern.uid}}">Add a New Record</a>
+	{{/auth.isAuthenticated}}
 
 	{{#recordsExist}}
 	<h1>Records</h1>

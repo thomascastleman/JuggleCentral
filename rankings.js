@@ -166,7 +166,7 @@ module.exports = {
 					rank = 1;	// reset the rank  back to 1 for time-based
 
 					// if this record time-based
-					if (records[i].seconds != null) {
+					if (i < records.length && records[i].seconds != null) {
 						// while we're still looking at a time-based record
 						while (j < records.length && records[j].seconds != null) {
 							// calculate score as fraction of best time score

@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Successfully Added a Record! | JuggleCentral</title>
+	<style>
+		/* positive, negative, and neutral score / rank changes */
+		.pos { color: green; }
+		.neg { color: red; }
+		.neut { color: gray; }
+	</style>
+</head>
+<body>
+	<h1>Success!</h1>
+	<p>A new record of {{recordString}} was added to your history for {{pattern.name}}.</p>
+
+	<p>Your user score is now {{user.score}} <span class="{{scoreDiff.class}}">({{scoreDiff.diff}})</span></p>
+	<p>Your user rank is now {{user.userRank}} <span class="{{rankDiff.class}}">({{rankDiff.diff}})</span></p>
+
+	<a href="/pattern/{{pattern.uid}}">View {{pattern.name}} Records</a>
+	<a href="/user/{{user.uid}}">View Your Juggler Profile</a>
+</body>
+</html>

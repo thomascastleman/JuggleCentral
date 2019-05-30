@@ -46,7 +46,7 @@ module.exports = {
 	// Get all pattern info associated with ID.
 	getPattern: function(uid, cb){
 		// check for insufficient fields
-		if (uid){
+		if (uid) {
 			// retrieve the information from the db
 			con.query('SELECT * FROM patterns WHERE uid = ?;', [uid], function(err, rows){
 				// if there isn't an error, callback the info.
@@ -61,14 +61,17 @@ module.exports = {
 		}
 		// error on insufficient fields
 		else{
-			cb("uid is undefined.");
+			cb("Unable to get pattern info, as no identifier was provided.");
 		}
 	},
 
 	// get all existing patterns from db
-	getAllPatterns: function(cb) {
+	getAllPatterns: function(recentFirst, cb) {
+		// order appropriately as requested
+		var order = recentFirst ? "DESC" : "ASC";
+
 		// select profiles from patterns table
-		con.query('SELECT patterns.*, SUBSTR(description, 1, 35) AS shortDescrip, SUBSTR(GIF, 1, 35) AS shortGIF FROM patterns ORDER BY uid DESC;', function(err, rows) {
+		con.query('SELECT patterns.*, SUBSTR(description, 1, 35) AS shortDescrip, SUBSTR(GIF, 1, 35) AS shortGIF FROM patterns ORDER BY uid ' + order + ';', function(err, rows) {
 			if (!err && rows !== undefined) {
 				// callback on patterns
 				cb(err, rows);
