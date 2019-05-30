@@ -162,7 +162,7 @@ module.exports = {
 							// add user info & record info to render object
 							render.user = user;
 							
-							if(records.length > 0){
+							if (records.length > 0){
 								render.records = records;	
 							}
 							

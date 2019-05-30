@@ -13,7 +13,7 @@
 
 	<h1>Records</h1>
 	{{#records}}
-		<h2>{{name}}</h2>
+		<h2><a href="/pattern/{{uid}}">{{name}}</a></h2>
 
 		<h3>Catches</h3>
 		<div style="height:100px; overflow-y: scroll;">
@@ -29,7 +29,7 @@
 				<tbody>
 					{{#catchRecords}}
 					<tr>
-						<td>{{rank}}
+						<td>{{recordRank}}
 						<td>{{catches}}</td>
 						<td>{{date}}</td>
 						<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
@@ -39,7 +39,7 @@
 			</table>
 		</div>
 
-		<h3>Duration</h3>
+		<h3>Time</h3>
 		<div div style="height:100px; overflow-y: scroll;">
 			<table>
 				<thead>
@@ -53,7 +53,7 @@
 				<tbody>
 					{{#timeRecords}}
 					<tr>
-						<td>{{rank}}</td>
+						<td>{{recordRank}}</td>
 						<td>{{duration}}</td>
 						<td>{{date}}</td>
 						<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
