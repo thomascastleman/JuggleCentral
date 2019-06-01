@@ -8,6 +8,36 @@
 	<link rel="stylesheet" type="text/css" href="/css/leaderboard.css">
 </head>
 <body>
+	<div class="navbar">
+		<ul>
+			<li><a href="/">JuggleCentral</a></li>
+			<li>
+				<div id="searchTools">
+					<div id="searchContainer">
+						<form action="/search" method="POST">
+							<input id="searchBar" name="query" type="text" placeholder="Search..." autocomplete="off">
+							<button id="searchSubmit"type="submit"><i id="searchIcon" class="fas fa-search"></i></button>
+						</form>
+					</div>
+				</div>
+			</li>
+			<li><a href="/search">Browse Patterns</a></li>
+			<li><a href="/leaderboard">Leaderboard</a></li>
+			<div id="logoutContainer" style="float:right">
+				{{#auth.isAuthenticated}}
+				{{#auth.userIsAdmin}}
+				<li><a href="/admin">Admin Portal</a></li>
+				{{/auth.userIsAdmin}}
+				<li><a href="/user/{{auth.userUID}}">My Profile ({{auth.givenName}})</a></li>
+				<li><a href="/logout">Log Out <i class="fas fa-sign-out-alt"></i></a></li>
+				{{/auth.isAuthenticated}}
+				{{^auth.isAuthenticated}}
+				<li><a href="/auth/google">Log In <i class="fas fa-sign-in-alt"></i></a></li>
+				{{/auth.isAuthenticated}}
+			</div>
+		</ul>
+	</div>
+	
 	<div class="container">
 		<h1 class="main-header">Leaderboard</h1>
 		<div class="sub-container">

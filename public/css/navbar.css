@@ -54,6 +54,8 @@
 
 #searchTools{
     height: 55px;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 #searchContainer{
@@ -98,7 +100,7 @@
 
 /* hover on search submit button */
 #searchSubmit:hover {
-    background-color: #6699ff;
+    background-color: #27a599;
     cursor: pointer;
 }
 

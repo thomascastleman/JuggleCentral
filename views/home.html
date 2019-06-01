@@ -38,36 +38,38 @@
 		</ul>
 	</div>
 
-	{{#activityExists}}
-	<h1>Juggling Activity</h1>
-	<table>
-		{{#activity}}
-		<tr>
-			{{#isPBActivity}}
-			<p><a href="/user/{{userUID}}">{{userName}}</a> set a new personal best of {{#catches}}{{catches}} catches{{/catches}}{{#duration}}{{duration}}{{/duration}} for <a href="/pattern/{{patternUID}}">{{patternName}}</a> (Local Rank {{recordRank}})</p>
-			<p>{{relativeTime}}</p>
-			{{/isPBActivity}}
+	<div class="container">
+		{{#activityExists}}
+		<h1 class="main-header">Juggling Activity</h1>
+		<div class="sub-container">
+			{{#activity}}
+			<div class="feed-row">
+				{{#isPBActivity}}
+				<p><a href="/user/{{userUID}}">{{userName}}</a> set a new personal best of {{#catches}}{{catches}} catches{{/catches}}{{#duration}}{{duration}}{{/duration}} for <a href="/pattern/{{patternUID}}">{{patternName}}</a> (Local Rank {{recordRank}})</p>
+				{{/isPBActivity}}
 
-			{{#isNewUserActivity}}
-			<p><a href="/user/{{uid}}">{{name}}</a> (Rank {{userRank}}) joined the {{jugglingClub}}</p>
-			<p>{{relativeTime}}</p>
-			{{/isNewUserActivity}}
+				{{#isNewUserActivity}}
+				<p><a href="/user/{{uid}}">{{name}}</a> (Rank {{userRank}}) joined the {{jugglingClub}}</p>
+				{{/isNewUserActivity}}
 
-			{{#isNewPatternActivity}}
-			<p>{{jugglingClub}} created a new pattern:</p>
-			<p><a href="/pattern/{{uid}}">{{name}}</a></p>
-			{{#GIF}}<img src="{{GIF}}" width="150"/>{{/GIF}}
-			<p>{{relativeTime}}</p>
-			{{/isNewPatternActivity}}
-		</tr>
-		{{/activity}}
-	</table>
-	{{/activityExists}}
+				{{#isNewPatternActivity}}
+				<p>{{jugglingClub}} created a new pattern:</p>
+				<div class="pattern-info">
+					<p><a href="/pattern/{{uid}}">{{name}}</a></p>
+					{{#GIF}}<img src="{{GIF}}" width="150"/>{{/GIF}}
+				</div>
+				{{/isNewPatternActivity}}
 
-	{{^activityExists}}
-	<h1>Welcome to JuggleCentral!</h1>
-	{{/activityExists}}
+				<p class="relative-time">{{relativeTime}}</p>
+			</div>
+			{{/activity}}
+		</div>
+		{{/activityExists}}
 
+		{{^activityExists}}
+		<h1 class="main-header">Welcome to JuggleCentral!</h1>
+		{{/activityExists}}
+	</div>
 
 </body>
 </html>

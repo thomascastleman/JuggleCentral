@@ -1,3 +1,28 @@
-body {
-	background-color: #FDFFFC;
+
+/* one row in activity feed */
+.feed-row {
+	background-color: #6AC87E;
+	padding: 5px;
+	margin-bottom: 5px;
+	border-radius: 5px;
+	clear: both;
+	position: relative;
+}
+
+/* time of activity item */
+.relative-time {
+	position: absolute;
+	bottom: 0;
+	right: 10px;
+}
+
+/* centered container for newly created pattern info */
+.pattern-info {
+
+}
+
+
+.feed-row img {
+	display: block;
+	margin: auto;
 }
