@@ -1,6 +1,10 @@
 @import 'https://fonts.googleapis.com/css?family=Reem+Kufi';
 
-html, body{
+html, body {
+	background-image: url('https://hds.thelounge.sx/assets/bg.jpg');
+	background-position:center top;
+	background-size:cover;
+
 	font-family: 'Reem Kufi', sans-serif;
 	margin:0;
 	padding:0;
@@ -9,4 +13,30 @@ html, body{
 	min-width: 500px;
 	overflow:auto;
 	background-color: #FDFFFC;
+}
+
+/* class for the page's main heading h element */
+.main-header {
+	color: white;
+	font-size: 70px;
+	text-shadow: 0 0 20px #000;
+	margin: 0;
+	margin-top: 20px;
+}
+
+/* container for main heading and sub-container div */
+.container {
+	width: 55%;
+	margin: auto;
+}
+
+/* class for container div within main container */
+.sub-container {
+	width: 100%;
+	padding: 10px;
+	background-color: #A0DCAC;
+	border-radius: 5px;
+	margin-bottom: 20px;
+	color: white;
+	box-shadow: 0 0 20px #000;
 }
