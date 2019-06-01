@@ -1,0 +1,97 @@
+.navbar {
+    height: 55px;
+    font-size: 14px;
+	width: 100%;
+    background-color: #53493D;
+}
+
+/*.navbar *{
+    height: 100%;
+}*/
+
+.navbar ul {
+    height: 55px;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.navbar li {
+    float:left;
+    height: 100%;
+}
+
+.navbar li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 16px 16px;
+    text-decoration: none;
+}
+
+.navbar li a:hover {
+    background-color: #38322b;
+}
+
+/* push text titles for each link away from their icons */
+.navbar li a i {
+	margin-right: 5px;
+}
+
+.navbar form{
+    height: 100%;
+}
+
+/* search bar input element */
+#searchBar {
+    font-weight: 300;
+    height: 60%;
+    width: 20vw;
+    min-width: 70px;
+    font-size: 15px;
+    outline: 0;
+    padding-left: 5px;
+    border: 1px solid #cccccc;
+    border-radius: 5px;
+    transition: box-shadow 0.1s;
+}
+
+/* search bar blue shadow on hover / focus */
+#searchBar:focus, #searchBar:hover {
+    box-shadow: 0px 0px 3px 2px #4d88ff;
+    transition: box-shadow 0.2s;
+}
+
+/* search submit button */
+#searchSubmit {
+    vertical-align: middle;
+    line-height: 40px;
+    height: 70%;
+    width: 50px;
+    border: none;
+    border-radius: 5px;
+    background-color: #4d88ff;
+    outline: 0;
+    text-decoration: none;
+}
+
+/* hover on search submit button */
+#searchSubmit:hover {
+    background-color: #6699ff;
+    cursor: pointer;
+}
+
+/* FA search icon in search button */
+#searchIcon {
+    font-size: 18px;
+    color: white;
+}
+
+
+/* small windows */
+@media (max-width: 80em) {
+	#authMessage {
+		display: none;
+	}
+}
