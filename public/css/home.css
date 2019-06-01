@@ -16,13 +16,11 @@
 	right: 10px;
 }
 
-/* centered container for newly created pattern info */
-.pattern-info {
-
-}
-
-
 .feed-row img {
 	display: block;
 	margin: auto;
+}
+
+.pattern-title {
+	text-align: center;
 }

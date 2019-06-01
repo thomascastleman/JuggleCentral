@@ -54,10 +54,8 @@
 
 				{{#isNewPatternActivity}}
 				<p>{{jugglingClub}} created a new pattern:</p>
-				<div class="pattern-info">
-					<p><a href="/pattern/{{uid}}">{{name}}</a></p>
-					{{#GIF}}<img src="{{GIF}}" width="150"/>{{/GIF}}
-				</div>
+				<p class="pattern-title"><a href="/pattern/{{uid}}">{{name}}</a></p>
+				{{#GIF}}<img src="{{GIF}}" width="150"/>{{/GIF}}
 				{{/isNewPatternActivity}}
 
 				<p class="relative-time">{{relativeTime}}</p>
