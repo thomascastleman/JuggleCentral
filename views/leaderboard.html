@@ -2,28 +2,34 @@
 <html>
 <head>
 	<title>Global Leaderboard | JuggleCentral</title>
+	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="/css/main.css">
+	<link rel="stylesheet" type="text/css" href="/css/navbar.css">
+	<link rel="stylesheet" type="text/css" href="/css/leaderboard.css">
 </head>
 <body>
-	<h1>Leaderboard</h1>
-	{{#jugglersExist}}
-	<table>
-		<tr>
-			<th>Rank</th>
-			<th>Name</th>
-			<th>Score</th>
-		</tr>
-		{{#jugglers}}
-		<tr>
-			<td>{{userRank}}</td>
-			<td><a href="/user/{{uid}}">{{name}}</a></td>
-			<td>{{score}}</td>
-		</tr>
-		{{/jugglers}}
-	</table>
-	{{/jugglersExist}}
+	<div class="container">
+		<h1>Leaderboard</h1>
+		{{#jugglersExist}}
+		<table>
+			<tr>
+				<th>Rank</th>
+				<th>Name</th>
+				<th>Score</th>
+			</tr>
+			{{#jugglers}}
+			<tr>
+				<td class="rank">{{userRank}}</td>
+				<td><a href="/user/{{uid}}">{{name}}</a></td>
+				<td class="score">{{score}}</td>
+			</tr>
+			{{/jugglers}}
+		</table>
+		{{/jugglersExist}}
 
-	{{^jugglersExist}}
-	<p>There are no jugglers to rank.</p>
-	{{/jugglersExist}}
+		{{^jugglersExist}}
+		<p>There are no jugglers to rank.</p>
+		{{/jugglersExist}}
+	</div>
 </body>
 </html>

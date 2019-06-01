@@ -1,0 +1,33 @@
+
+.container {
+	width: 40%;
+	margin: auto;
+	background-color: #A0DCAC;
+	padding: 10px;
+	border-radius: 5px;
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+table {
+	width: 100%;
+}
+
+td, th {
+	background-color: #6AC87E;
+	text-align: left;
+	padding: 4px;
+	border-radius: 3px;
+}
+
+tr:hover {
+	cursor: pointer;
+}
+
+.rank, .score {
+	text-align: center;
+}
+
+a, a:hover {
+	color: #000000;
+}
