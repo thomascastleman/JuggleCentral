@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Update Video Evidence | JuggleCentral</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+</head>
+<body>
+	<h1>Update Video Evidence</h1>
+	<form action="/updateVideo/{{record.uid}}" method="POST">
+		<input name="redirect" value="/{{redirect}}/{{redirectUID}}" hidden>
+		<table>
+			<tr>
+				<th>Recorded:</th>
+				<td>{{record.date}}</td>
+			</tr>
+	        <tr>
+	            <th>Juggler:</th>
+	            <td>
+					<p>{{record.userName}}</p>
+	            </td>
+	        </tr>
+	        <tr>
+	            <th>Pattern:</th>
+	            <td>
+	            	<p>{{record.patternName}}</p>
+	            </td>
+	        </tr>
+	        <tr>
+	            <th>Video Evidence:</th>
+	            <td>
+					<input name="video" autocomplete="off" value="{{record.video}}">
+	            </td>
+	        </tr>
+		</table>
+		<br>
+		<button type="submit">Update Video Evidence</button>
+	</form>
+</body>
+</html>

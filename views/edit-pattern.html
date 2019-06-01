@@ -36,8 +36,8 @@
 			<td>{{catches}}</td>
 			<td><a href="/user/{{userUID}}">{{userName}} ({{userRank}})</a></td>
 			<td>{{date}}</td>
-			<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
-			<td><a href="/editRecord/{{uid}}">Edit</a></td>
+			<td>{{#video}}<a href="{{{video}}}">Video</a>{{/video}}</td>
+			<td><a href="/updateVideo/{{uid}}/editPattern/{{pattern.uid}}">Update Video</a></td>
 			<td><form action="/removeRecord/{{uid}}" method="POST"><input name="redirect" type="text" value="/editPattern/{{pattern.uid}}" hidden><button type="submit">Delete</button></form></td>
 		</tr>
 		{{/records.catchRecords}}
@@ -60,8 +60,8 @@
 			<td>{{duration}}</td>
 			<td><a href="/user/{{userUID}}">{{userName}} ({{userRank}})</a></td>
 			<td>{{date}}</td>
-			<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
-			<td><a href="/editRecord/{{uid}}">Edit</a></td>
+			<td>{{#video}}<a href="{{{video}}}">Video</a>{{/video}}</td>
+			<td><a href="/updateVideo/{{uid}}/editPattern/{{pattern.uid}}">Update Video</a></td>
 			<td><form action="/removeRecord/{{uid}}" method="POST"><input name="redirect" type="text" value="/editPattern/{{pattern.uid}}" hidden><button type="submit">Delete</button></form></td>
 		</tr>
 		{{/records.timeRecords}}

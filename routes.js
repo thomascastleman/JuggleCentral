@@ -539,13 +539,54 @@ module.exports = {
 		});
 
 		// request to see edit page for an existing record
-		app.get('/editRecord/:id', auth.isAuthGET, function(req, res) {
-			
+		app.get('/updateVideo/:id/:redirect/:redirectUID', auth.isAuthGET, function(req, res) {
+			// get default render object
+			var render = defRender(req);
+
+			// store redirect location
+			render.redirect = req.params.redirect;
+			render.redirectUID = req.params.redirectUID;
+
+			// get record information
+			getters.getRecord(req.params.id, function(err, record) {
+				if (!err) {
+					// add to render object
+					render.record = record;
+
+					// format time recorded
+					record.date = moment(record.timeRecorded).format('MMMM Do, YYYY [at] h:mm A');
+
+					// render page
+					res.render('update-video.html', render);
+				} else {
+					error(res, "Failed to retrieve indicated record information.");
+				}
+			});
 		});
 
 		// request to edit an existing record
-		app.post('/editRecord/:id', auth.isAuthPOST, function(req, res) {
-			
+		app.post('/updateVideo/:id', auth.isAuthPOST, function(req, res) {
+			// figure out who owns this record
+			getters.getUserByRecord(req.params.id, function(err, userUID) {
+				if (!err) {
+					// make sure this user is editing their own record (or is an admin)
+					if (req.user.local.uid == userUID || req.user.local.isAdmin == '1') {
+						// apply updates to the video link
+						maintenance.updateVideo(req.params.id, req.body.video, function(err) {
+							if (!err) {
+								// redirect to indicated location
+								res.redirect(req.body.redirect);
+							} else {
+								error(res, "Failed to update video evidence link.");
+							}
+						});
+					} else {
+						error(res, "You do not have authorization to edit the video evidence of this record.");
+					}
+				} else {
+					error(res, "Failed to determine ownership of indicated record to edit.");
+				}
+			});
 		});
 
 		// request to remove an existing record

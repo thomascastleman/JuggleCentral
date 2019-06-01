@@ -248,6 +248,14 @@ module.exports = {
 		}
 	},
 
+	// update the video evidence link of a given record
+	updateVideo: function(uid, video, cb) {
+		// make update to table
+		con.query('UPDATE records SET video = ? WHERE uid = ?;', [video, uid], function(err) {
+			cb(err);
+		});
+	},
+
 	// remove an existing record by UID
 	removeRecord: function(uid, cb) {
 		// get this record's associated pattern and user
