@@ -11,17 +11,19 @@
 	<div class="navbar">
 		<ul>
 			<li><a href="/">JuggleCentral</a></li>
-			<div id="searchTools">
-				<li>
-					<form action="/search" method="POST">
-						<input id="searchBar" name="query" type="text" placeholder="Search..." autocomplete="off">
-						<button id="searchSubmit"type="submit"><i id="searchIcon" class="fas fa-search"></i></button>
-					</form>
-				</li>
-			</div>
+			<li>
+				<div id="searchTools">
+					<div id="searchContainer">
+						<form action="/search" method="POST">
+							<input id="searchBar" name="query" type="text" placeholder="Search..." autocomplete="off">
+							<button id="searchSubmit"type="submit"><i id="searchIcon" class="fas fa-search"></i></button>
+						</form>
+					</div>
+				</div>
+			</li>
 			<li><a href="/search">Browse Patterns</a></li>
 			<li><a href="/leaderboard">Leaderboard</a></li>
-			<div style="float:right">
+			<div id="logoutContainer" style="float:right">
 				{{#auth.isAuthenticated}}
 				{{#auth.userIsAdmin}}
 				<li><a href="/admin">Admin Portal</a></li>
