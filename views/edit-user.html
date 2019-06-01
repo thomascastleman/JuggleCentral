@@ -34,8 +34,8 @@
 			<td>{{recordRank}}</td>
 			<td>{{catches}}</td>
 			<td>{{date}}</td>
-			<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
-			<td><a href="/editRecord/{{uid}}">Edit</a></td>
+			<td>{{#video}}<a href="{{{video}}}">Video</a>{{/video}}</td>
+			<td><a href="/updateVideo/{{uid}}/editUser/{{juggler.uid}}">Update Video</a></td>
 			<td><form action="/removeRecord/{{uid}}" method="POST"><input name="redirect" type="text" value="/editUser/{{juggler.uid}}" hidden><button type="submit">Delete</button></form></td>
 		</tr>
 		{{/catchRecords}}
@@ -57,8 +57,8 @@
 			<td>{{recordRank}}</td>
 			<td>{{duration}}</td>
 			<td>{{date}}</td>
-			<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
-			<td><a href="/editRecord/{{uid}}">Edit</a></td>
+			<td>{{#video}}<a href="{{{video}}}">Video</a>{{/video}}</td>
+			<td><a href="/updateVideo/{{uid}}/editUser/{{juggler.uid}}">Update Video</a></td>
 			<td><form action="/removeRecord/{{uid}}" method="POST"><input name="redirect" type="text" value="/editUser/{{juggler.uid}}" hidden><button type="submit">Delete</button></form></td>
 		</tr>
 		{{/timeRecords}}

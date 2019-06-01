@@ -8,6 +8,19 @@ var moment = require('moment');
 
 module.exports = {
 
+	// get a singular record, by UID
+	getRecord: function(uid, cb) {
+		// select all fields from record
+		con.query('SELECT r.*, u.name AS userName, p.name AS patternName FROM records r JOIN users u ON r.userUID = u.uid JOIN patterns p ON r.patternUID = p.uid WHERE r.uid = ?;', [uid], function(err, rows) {
+			if (!err && rows !== undefined && rows.length > 0) {
+				// callback on all record info
+				cb(err, rows[0]);
+			} else {
+				cb(err || "Failed to retrieve record information.");
+			}
+		});
+	},
+
 	// Get all user info associated with ID.
 	getUser: function(uid, cb){
 		// check for insufficient fields
