@@ -1,0 +1,40 @@
+
+
+table {
+	color: #333333;
+}
+
+.container {
+	width: 75%;
+}
+
+h2 {
+	font-size: 49px;
+	margin: 0;
+	text-shadow: 0 0 20px #000;
+}
+
+table {
+	width: 100%;
+}
+
+td {
+	text-align: center;
+}
+
+tbody tr {
+	height: 50px;
+	background-color: #f8f8f8;
+}
+
+tbody tr:nth-child(2n) {
+	background-color:#ececec;
+}
+
+.num-objects {
+	width: 50px;
+}
+
+button:hover {
+	cursor: pointer;
+}

@@ -17,12 +17,14 @@
 	right: 10px;
 }
 
+/* newly created pattern GIFs in feed */
 .feed-row img {
 	display: block;
 	margin: auto;
 	border-radius: 6px;
 }
 
+/* title of newly created patterns in feed */
 .pattern-title {
 	font-size: 24px;
 	text-align: center;

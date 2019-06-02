@@ -5,6 +5,7 @@
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 	<link rel="stylesheet" type="text/css" href="/css/main.css">
 	<link rel="stylesheet" type="text/css" href="/css/navbar.css">
+	<link rel="stylesheet" type="text/css" href="/css/error.css">
 </head>
 <body>
 	<div class="navbar">
@@ -37,7 +38,11 @@
 		</ul>
 	</div>
 	
-	<h1>An Error Occurred!</h1>
-	{{#message}}<p>{{message}}</p>{{/message}}
+	<div class="container">
+		<h1 class="main-header">An Error Occurred!</h1>
+		<div class="sub-container">
+			{{#message}}<p><i class="fas fa-ban"></i> {{message}}</p>{{/message}}
+		</div>
+	</div>
 </body>
 </html>
