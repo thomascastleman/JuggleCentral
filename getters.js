@@ -221,7 +221,7 @@ module.exports = {
 	getRecentPersonalBests: function(limit, cb) {
 		if (limit && limit > 0) {
 			// select only personal bests from records, joining to get user and pattern name, limiting size of response
-			con.query('SELECT r.*, r.timeRecorded AS timeCreated, u.name AS userName, p.name AS patternName, 1 = 1 AS isPBActivity FROM records r JOIN users u ON r.userUID = u.uid JOIN patterns p ON r.patternUID = p.uid WHERE r.isPersonalBest = 1 LIMIT ?;', [limit], function(err, rows) {
+			con.query('SELECT r.*, r.timeRecorded AS timeCreated, u.name AS userName, p.name AS patternName, 1 = 1 AS isPBActivity FROM records r JOIN users u ON r.userUID = u.uid JOIN patterns p ON r.patternUID = p.uid WHERE r.isPersonalBest = 1 ORDER BY uid DESC LIMIT ?;', [limit], function(err, rows) {
 				if (!err && rows !== undefined) {
 					// callback on records
 					cb(err, rows);

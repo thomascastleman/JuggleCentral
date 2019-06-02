@@ -40,3 +40,14 @@ html, body {
 	color: white;
 	box-shadow: 0 0 20px #000;
 }
+
+/* all regular link colors */
+a {
+	text-decoration: none;
+	color: #33d6ff;
+}
+
+/* all hovered link colors */
+a:hover {
+	color: #80e5ff;
+}
