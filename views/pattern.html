@@ -5,6 +5,7 @@
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 	<link rel="stylesheet" type="text/css" href="/css/main.css">
 	<link rel="stylesheet" type="text/css" href="/css/navbar.css">
+	<link rel="stylesheet" type="text/css" href="/css/pattern.css">
 </head>
 <body>
 	<div class="navbar">
@@ -37,64 +38,70 @@
 		</ul>
 	</div>
 
-	{{#auth.userIsAdmin}}<a href="/editPattern/{{pattern.uid}}">Edit Pattern</a>{{/auth.userIsAdmin}}
+	<div class="container">
+		<h1 class="main-header">{{pattern.name}}</h1>
+		<div class="sub-container">
+			{{#auth.userIsAdmin}}<a href="/editPattern/{{pattern.uid}}">Edit Pattern</a>{{/auth.userIsAdmin}}
 
-	<h1>{{pattern.name}}</h1>
-	<h4>{{pattern.numObjects}}-object pattern</h4>
-	<p>{{pattern.description}}</p>
-	{{#pattern.GIF}}<img src="{{pattern.GIF}}" width="170">{{/pattern.GIF}}
+			<h4>{{pattern.numObjects}}-object pattern</h4>
+			<p>{{pattern.description}}</p>
+			{{#pattern.GIF}}<img class="pattern-img" src="{{pattern.GIF}}" width="250">{{/pattern.GIF}}
 
-	<br>
-	{{#auth.isAuthenticated}}
-	<a href="/addRecord/{{pattern.uid}}">Add a New Record</a>
-	{{/auth.isAuthenticated}}
+			<br>
+			{{#auth.isAuthenticated}}
+			<a href="/addRecord/{{pattern.uid}}">Add a New Record</a>
+			{{/auth.isAuthenticated}}
 
-	{{#recordsExist}}
-	<h1>Records</h1>
-	
-	<h2>Catches</h2>
-	<table>
-		<tr>
-			<th>Rank</th>
-			<th>Catches</th>
-			<th>Juggler</th>
-			<th>Date</th>
-			<th>Video</th>
-		</tr>
-		{{#records.catchRecords}}
-		<tr>
-			<td>{{recordRank}}</td>
-			<td>{{catches}}</td>
-			<td><a href="/user/{{userUID}}">{{userName}} ({{userRank}})</a></td>
-			<td>{{date}}</td>
-			<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
-		</tr>
-		{{/records.catchRecords}}
-	</table>
+			{{#recordsExist}}
+			<div class="catch-container">
+				<h2>Catches</h2>
+				<table>
+					<tr>
+						<th>Rank</th>
+						<th>Catches</th>
+						<th>Juggler</th>
+						<th>Date</th>
+						<th>Video</th>
+					</tr>
+					{{#records.catchRecords}}
+					<tr>
+						<td>{{recordRank}}</td>
+						<td>{{catches}}</td>
+						<td><a href="/user/{{userUID}}">{{userName}} ({{userRank}})</a></td>
+						<td>{{date}}</td>
+						<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
+					</tr>
+					{{/records.catchRecords}}
+				</table>
+			</div>
 
-	<h2>Time</h2>
-	<table>
-		<tr>
-			<th>Rank</th>
-			<th>Duration</th>
-			<th>Juggler</th>
-			<th>Date</th>
-			<th>Video</th>
-		</tr>
-		{{#records.timeRecords}}
-		<tr>
-			<td>{{recordRank}}</td>
-			<td>{{duration}}</td>
-			<td><a href="/user/{{userUID}}">{{userName}} ({{userRank}})</a></td>
-			<td>{{date}}</td>
-			<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
-		</tr>
-		{{/records.timeRecords}}
-	</table>
-	{{/recordsExist}}
+			<div class="time-container">
+				<h2>Time</h2>
+				<table>
+					<tr>
+						<th>Rank</th>
+						<th>Duration</th>
+						<th>Juggler</th>
+						<th>Date</th>
+						<th>Video</th>
+					</tr>
+					{{#records.timeRecords}}
+					<tr>
+						<td>{{recordRank}}</td>
+						<td>{{duration}}</td>
+						<td><a href="/user/{{userUID}}">{{userName}} ({{userRank}})</a></td>
+						<td>{{date}}</td>
+						<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
+					</tr>
+					{{/records.timeRecords}}
+				</table>
+			</div>
+			{{/recordsExist}}
 
-	{{^recordsExist}}
-	<p>No records exist under this pattern.</p>
-	{{/recordsExist}}
+			{{^recordsExist}}
+			<p>No records exist under this pattern.</p>
+			{{/recordsExist}}
+		</div>
+	</div>
 </body>
 </html>
