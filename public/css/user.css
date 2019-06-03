@@ -1,0 +1,77 @@
+#rank-info{
+	margin: 0;
+	padding: 10px;
+	position: absolute;
+	top: 0;
+	right: 0;
+	color: white;
+	font-size: 20px;
+}
+
+.user-edit-link{
+	margin: 0;
+	position: absolute;
+	top: 0;
+	left: 0;
+	padding: 10px;
+}
+
+#bio{
+	margin-top: 30px;
+}
+
+.records-row{
+	padding: 5px;
+	padding-bottom: 10px;
+	background-color: red;
+	margin-bottom: 10px;
+}
+
+.records-row h2{
+	margin-top: 0px;
+}
+
+.catches-time-container{
+	width: 100%;
+	display: grid;
+	grid-template-columns: auto auto;
+	grid-column-gap: 10px;
+	margin: auto;
+}
+
+.catches-time-container h3{
+	text-align: center;
+	margin-top: 0px;
+	margin-bottom: 5px;
+}
+
+.title-records-container{
+	display: inline-grid;
+}
+
+.records-container{
+	height:150px; 
+	overflow-y: scroll;
+	position: relative;
+}
+
+
+table {
+	width: 100%;
+}
+
+td, th {
+	background-color: #6AC87E;
+	text-align: left;
+	padding: 4px;
+	border-radius: 3px;
+}
+
+
+tr:hover {
+	cursor: pointer;
+}
+
+.rank{
+	text-align: center;
+}

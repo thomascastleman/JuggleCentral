@@ -32,6 +32,7 @@ html, body {
 
 /* class for container div within main container */
 .sub-container {
+	position: relative;
 	width: 100%;
 	padding: 10px;
 	background-color: #A0DCAC;

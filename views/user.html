@@ -5,6 +5,7 @@
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
 	<link rel="stylesheet" type="text/css" href="/css/main.css">
 	<link rel="stylesheet" type="text/css" href="/css/navbar.css">
+	<link rel="stylesheet" type="text/css" href="/css/user.css">
 </head>
 <body>
 	<div class="navbar">
@@ -36,68 +37,79 @@
 			</div>
 		</ul>
 	</div>
-	
-	{{#viewingOwn}}<a href="/editUser/{{user.uid}}">Edit Your Profile</a>{{/viewingOwn}}
-	{{^viewingOwn}}{{#auth.userIsAdmin}}<a href="/editUser/{{user.uid}}">Edit Juggler</a>{{/auth.userIsAdmin}}{{/viewingOwn}}
 
-	<h1>{{user.name}} {{#showBothNames}} ({{user.realName}}) {{/showBothNames}}</h1>
-	<p>Rank: {{user.userRank}}, Score: {{user.score}}</p>
-	<p>{{user.bio}}</p>
+	<div class="container">
+		<h1 class="main-header">{{user.name}} {{#showBothNames}} ({{user.realName}}) {{/showBothNames}}</h1>
+		
+		<div class="sub-container">
+			<p id="rank-info">Rank: {{user.userRank}}, Score: {{user.score}}</p>
+			{{#viewingOwn}}<a class="user-edit-link" href="/editUser/{{user.uid}}">Edit Your Profile</a>{{/viewingOwn}}
+			{{^viewingOwn}}{{#auth.userIsAdmin}}<a class="user-edit-link" href="/editUser/{{user.uid}}">Edit Juggler</a>{{/auth.userIsAdmin}}{{/viewingOwn}}
 
-	<h1>Records</h1>
-	{{#records}}
-		<h2><a href="/pattern/{{uid}}">{{name}}</a></h2>
+			<p id="bio">{{user.bio}}</p>
 
-		<h3>Catches</h3>
-		<div style="height:100px; overflow-y: scroll;">
-			<table>
-				<thead>
-					<tr>
-						<th>Rank</th>
-						<th>Catches</th>
-						<th>Date</th>
-						<th>Video</th>
-					</tr>
-				</thead>
-				<tbody>
-					{{#catchRecords}}
-					<tr>
-						<td>{{recordRank}}
-						<td>{{catches}}</td>
-						<td>{{date}}</td>
-						<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
-					</tr>
-					{{/catchRecords}}
-				</tbody>
-			</table>
+			<h1>Records</h1>
+			{{#records}}
+				<div class="records-row">
+					<h2><a href="/pattern/{{uid}}">{{name}}</a></h2>
+					<div class="catches-time-container">
+						<div class="title-records-container">	
+							<h3>Catches</h3>
+							<div class="records-container">
+								<table>
+									<thead>
+										<tr>
+											<th>Rank</th>
+											<th>Catches</th>
+											<th>Date</th>
+											<th>Video</th>
+										</tr>
+									</thead>
+									<tbody>
+										{{#catchRecords}}
+										<tr>
+											<td class= "rank">{{recordRank}}</td>
+											<td>{{catches}}</td>
+											<td>{{date}}</td>
+											<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
+										</tr>
+										{{/catchRecords}}
+									</tbody>
+								</table>
+							</div>
+						</div>
+						<div class="title-records-container">
+							<h3>Time</h3>
+							<div class="records-container">
+								<table>
+									<thead>
+										<tr>
+											<th>Rank</th>
+											<th>Duration</th>
+											<th>Date</th>
+											<th>Video</th>
+										</tr>
+									</thead>
+									<tbody>
+										{{#timeRecords}}
+										<tr>
+											<td class="rank">{{recordRank}}</td>
+											<td>{{duration}}</td>
+											<td>{{date}}</td>
+											<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
+										</tr>
+										{{/timeRecords}}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+			{{/records}}
+			{{^records}}
+				<p>This user has no records</p>
+			{{/records}}
 		</div>
-
-		<h3>Time</h3>
-		<div div style="height:100px; overflow-y: scroll;">
-			<table>
-				<thead>
-					<tr>
-						<th>Rank</th>
-						<th>Duration</th>
-						<th>Date</th>
-						<th>Video</th>
-					</tr>
-				</thead>
-				<tbody>
-					{{#timeRecords}}
-					<tr>
-						<td>{{recordRank}}</td>
-						<td>{{duration}}</td>
-						<td>{{date}}</td>
-						<td>{{#video}}<a href="{{video}}">Video</a>{{/video}}</td>
-					</tr>
-					{{/timeRecords}}
-				</tbody>
-			</table>
-		</div>
-	{{/records}}
-	{{^records}}
-		<p>This user has no records</p>
-	{{/records}}
+	</div>
 </body>
 </html>
