@@ -1,6 +1,11 @@
 # JuggleCentral
 A platform for jugglers to track their progress across various events and access local records.
 
+### Ranking
+
+![](https://raw.githubusercontent.com/thomascastleman/JuggleCentral/master/ranking.png)
+
+### A note on `credentials.js`
 The format of `credentials.js` should be:
 ```javascript
 module.exports = {
